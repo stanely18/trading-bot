@@ -1,0 +1,29 @@
+{
+  "orchestrator": "claude-cowork-cloud",
+  "agents": [
+    {
+      "id": "research",
+      "transport": "external-tool",
+      "enabled": false,
+      "provider": null,
+      "model": null
+    },
+    {
+      "id": "strategy",
+      "transport": "external-tool",
+      "enabled": false,
+      "provider": null,
+      "model": null
+    },
+    {
+      "id": "risk_review",
+      "transport": "external-tool",
+      "enabled": false,
+      "provider": null,
+      "model": null
+    }
+  ],
+  "timeout_policy": "HOLD",
+  "automatic_provider_fallback": false,
+  "exchange_credentials_visible_to_agents": false
+}

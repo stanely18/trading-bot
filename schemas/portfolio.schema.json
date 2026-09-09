@@ -1,0 +1,276 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trading-poc:portfolio:1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "mode": {
+      "const": "paper"
+    },
+    "policy_hash": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "started_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "ends_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "cash": {
+      "type": "number",
+      "minimum": 0
+    },
+    "positions": {
+      "type": "object",
+      "properties": {
+        "BTC-USDT": {
+          "type": "object",
+          "properties": {
+            "qty": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "entry_price": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "stop_price": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "qty",
+            "entry_price",
+            "stop_price"
+          ],
+          "additionalProperties": false
+        },
+        "ETH-USDT": {
+          "type": "object",
+          "properties": {
+            "qty": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "entry_price": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "stop_price": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "qty",
+            "entry_price",
+            "stop_price"
+          ],
+          "additionalProperties": false
+        },
+        "SOL-USDT": {
+          "type": "object",
+          "properties": {
+            "qty": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "entry_price": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "stop_price": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "qty",
+            "entry_price",
+            "stop_price"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "peak_equity": {
+      "type": "number",
+      "minimum": 0
+    },
+    "day": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "day_equity": {
+      "type": "number",
+      "minimum": 0
+    },
+    "last_equity": {
+      "type": "number",
+      "minimum": 0
+    },
+    "daily_orders": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "halted": {
+      "type": "boolean"
+    },
+    "market": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "BTC-USDT": {
+              "type": "object",
+              "properties": {
+                "symbol": {
+                  "enum": [
+                    "BTC-USDT",
+                    "ETH-USDT",
+                    "SOL-USDT"
+                  ]
+                },
+                "price": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "ts_ms": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "source": {
+                  "enum": [
+                    "okx_public",
+                    "fixture"
+                  ]
+                }
+              },
+              "required": [
+                "symbol",
+                "price",
+                "ts_ms",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "ETH-USDT": {
+              "type": "object",
+              "properties": {
+                "symbol": {
+                  "enum": [
+                    "BTC-USDT",
+                    "ETH-USDT",
+                    "SOL-USDT"
+                  ]
+                },
+                "price": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "ts_ms": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "source": {
+                  "enum": [
+                    "okx_public",
+                    "fixture"
+                  ]
+                }
+              },
+              "required": [
+                "symbol",
+                "price",
+                "ts_ms",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "SOL-USDT": {
+              "type": "object",
+              "properties": {
+                "symbol": {
+                  "enum": [
+                    "BTC-USDT",
+                    "ETH-USDT",
+                    "SOL-USDT"
+                  ]
+                },
+                "price": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "ts_ms": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "source": {
+                  "enum": [
+                    "okx_public",
+                    "fixture"
+                  ]
+                }
+              },
+              "required": [
+                "symbol",
+                "price",
+                "ts_ms",
+                "source"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "BTC-USDT",
+            "ETH-USDT",
+            "SOL-USDT"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "maxProperties": 0
+        }
+      ]
+    },
+    "last_run_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "revision",
+    "mode",
+    "policy_hash",
+    "started_ms",
+    "ends_ms",
+    "cash",
+    "positions",
+    "peak_equity",
+    "day",
+    "day_equity",
+    "last_equity",
+    "daily_orders",
+    "halted",
+    "market",
+    "last_run_hash"
+  ],
+  "additionalProperties": false
+}

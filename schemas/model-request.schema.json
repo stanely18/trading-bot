@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trading-poc:model-request:1",
+  "type": "object",
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "role": {
+      "enum": [
+        "research",
+        "strategy",
+        "risk_review"
+      ]
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "snapshot_hash": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "context": {
+      "type": "object"
+    },
+    "deadline_ms": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "required": [
+    "request_id",
+    "role",
+    "model",
+    "snapshot_hash",
+    "context",
+    "deadline_ms"
+  ],
+  "additionalProperties": false
+}

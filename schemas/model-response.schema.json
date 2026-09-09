@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trading-poc:model-response:1",
+  "type": "object",
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "provider": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "snapshot_hash": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "output": {
+      "type": "object"
+    },
+    "usage": {
+      "type": "object"
+    },
+    "latency_ms": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "required": [
+    "request_id",
+    "provider",
+    "model",
+    "snapshot_hash",
+    "output",
+    "usage",
+    "latency_ms"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "orchestrator": "claude-cowork-cloud",
+  "mode": "paper",
+  "days": 30,
+  "cadence": "hourly",
+  "timezone": "UTC",
+  "initial_cash_usdt": 10000,
+  "symbols": [
+    "BTC-USDT",
+    "ETH-USDT",
+    "SOL-USDT"
+  ],
+  "state_backend": "sqlite_on_persistent_single_host_volume",
+  "strategy": "baseline-hold",
+  "remote_model_enabled": false,
+  "demo_order_execution_enabled": false
+}

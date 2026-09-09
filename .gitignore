@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+.env.*
+!.env.example
+state/
+*.sqlite3
+*.sqlite3-*
+
+# Private runtime evidence and host inventory remain local.
+evidence/*
+!evidence/README.md
+docs/environment.md
+*.pem
+*.key
+*.p12
+*.pfx
+.DS_Store

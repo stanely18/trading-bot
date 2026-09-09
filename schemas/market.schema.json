@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trading-poc:market:1",
+  "type": "object",
+  "properties": {
+    "BTC-USDT": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "enum": [
+            "BTC-USDT",
+            "ETH-USDT",
+            "SOL-USDT"
+          ]
+        },
+        "price": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "ts_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "source": {
+          "enum": [
+            "okx_public",
+            "fixture"
+          ]
+        }
+      },
+      "required": [
+        "symbol",
+        "price",
+        "ts_ms",
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "ETH-USDT": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "enum": [
+            "BTC-USDT",
+            "ETH-USDT",
+            "SOL-USDT"
+          ]
+        },
+        "price": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "ts_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "source": {
+          "enum": [
+            "okx_public",
+            "fixture"
+          ]
+        }
+      },
+      "required": [
+        "symbol",
+        "price",
+        "ts_ms",
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "SOL-USDT": {
+      "type": "object",
+      "properties": {
+        "symbol": {
+          "enum": [
+            "BTC-USDT",
+            "ETH-USDT",
+            "SOL-USDT"
+          ]
+        },
+        "price": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "ts_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "source": {
+          "enum": [
+            "okx_public",
+            "fixture"
+          ]
+        }
+      },
+      "required": [
+        "symbol",
+        "price",
+        "ts_ms",
+        "source"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "BTC-USDT",
+    "ETH-USDT",
+    "SOL-USDT"
+  ],
+  "additionalProperties": false
+}
