@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 from trading_bot.core import Store, SYMBOLS
-from trading_bot.cycle import run_cycle
+from trading_bot.cycle import run_cycle, run_risk_check
 from trading_bot.model import ModelResponse
 
 T = 1788998400000
@@ -99,6 +99,52 @@ class CycleTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             run_cycle(str(self.root / 'nope.sqlite3'), 'x', model_client=None, root=str(self.root),
                       now_ms_fn=lambda: T, market_fn=mk_market, candles_fn=mk_candles)
+
+
+class RiskCheckTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        self.db = self.root / 'state' / 'exp.sqlite3'
+        Store(self.db).init(T)
+
+    def test_hold_writes_risk_log_not_decisions(self):
+        out = run_risk_check(str(self.db), 'risk-2026-09-09T21Z', root=str(self.root),
+                             now_ms_fn=lambda: T, market_fn=mk_market)
+        self.assertEqual(out['kind'], 'risk_check')
+        self.assertEqual(out['status'], 'held')
+        self.assertEqual(out['risk_exits'], [])
+        self.assertTrue((self.root / 'logs/risk/risk-2026-09-09T21Z.json').exists())
+        self.assertTrue((self.root / 'state/portfolio.json').exists())
+        self.assertFalse((self.root / 'logs/decisions/risk-2026-09-09T21Z.json').exists())
+        self.assertFalse((self.root / 'trades/trades.csv').exists())
+        self.assertFalse((self.root / 'state/agent_state.json').exists())  # untouched by risk check
+
+    def test_executes_stop_loss_between_trading_cycles(self):
+        # trading cycle buys ETH, then price falls below the 2% stop; the hourly
+        # risk check must flatten it without any model call.
+        run_cycle(str(self.db), 'slot-a', model_client=FakeModel(BUY_BIG), root=str(self.root),
+                  now_ms_fn=lambda: T, market_fn=mk_market, candles_fn=mk_candles)
+        self.assertIn('ETH-USDT', Store(self.db).read()['positions'])
+        crash = {s: dict(symbol=s, price=(p * 0.90 if s == 'ETH-USDT' else p), ts_ms=T, source='fixture')
+                 for s, p in zip(SYMBOLS, PRICES)}
+        out = run_risk_check(str(self.db), 'risk-x', root=str(self.root),
+                             now_ms_fn=lambda: T, market_fn=lambda: crash)
+        self.assertTrue(out['risk_exits'])
+        self.assertEqual(out['risk_exits'][0]['side'], 'SELL')
+        self.assertNotIn('ETH-USDT', Store(self.db).read()['positions'])
+        rows = (self.root / 'trades/trades.csv').read_text().strip().splitlines()
+        self.assertEqual(rows[-1].split(',')[0], 'risk-x')
+
+    def test_idempotent_replay(self):
+        run_risk_check(str(self.db), 'risk-r', root=str(self.root),
+                       now_ms_fn=lambda: T, market_fn=mk_market)
+        rev = Store(self.db).read()['revision']
+        run_risk_check(str(self.db), 'risk-r', root=str(self.root),
+                       now_ms_fn=lambda: T, market_fn=mk_market)
+        self.assertEqual(Store(self.db).read()['revision'], rev)
+        self.assertEqual(len(Store(self.db).records()), 1)
 
 
 if __name__ == '__main__':

@@ -9,14 +9,18 @@ prompt, risk parameters, code, or any file under `state/`, `trades/` or
 - `state/risk_state.json` — halted flag, drawdown %, daily-loss %, peak equity.
 - `state/agent_state.json` — last regime / view / model identifiers, consecutive holds.
 - `state/experiment.json` — experiment version, `benchmarks`, `benchmark_vs_strategy`, `changelog`.
-- `logs/decisions/*.json` — one record per cycle: market snapshot, portfolio before,
-  Kimi raw response (`agent`), adapter sizing (`adapter`), risk result, executed /
-  rejected / resized actions, portfolio after, `pnl`, `errors`.
-- `logs/workflow/*.json` — per-run health: step statuses, durations, errors.
+- `logs/decisions/*.json` — one record per 4-hour Kimi cycle (`run_id` prefix
+  `experiment-`): market snapshot, portfolio before, Kimi raw response (`agent`),
+  adapter sizing (`adapter`), risk result, executed / rejected / resized actions,
+  portfolio after, `pnl`, `errors`.
+- `logs/risk/*.json` — one record per hourly deterministic risk check (`run_id`
+  prefix `risk-`): market, risk result, any stop / drawdown / daily-loss exits,
+  positions after, `pnl`. No model, no indicators, no benchmark rebalance.
+- `logs/workflow/*.json` — per-run health for both kinds: step statuses, durations, errors.
 - `trades/trades.csv` — appended fills.
 
-Scope the pass to the **last 24 hours** by `recorded_utc` (typically 6 cycles at
-the 4-hour cadence).
+Scope the pass to the **last 24 hours** by `recorded_utc`: typically 6 `experiment-`
+trading cycles (00/04/08/12/16/20 UTC) and up to 24 `risk-` checks (hourly).
 
 ## Output
 
@@ -28,10 +32,10 @@ Write `reports/daily/YYYY-MM-DD.md` (the date being the day under review). Cover
 - **Trades summary** — count, symbols, sides, fees, from `trades/trades.csv`.
 - **Notable Kimi decisions** — regime calls, high-confidence candidates, thesis vs outcome.
 - **Confidence calibration** — did higher-confidence candidates fare better? (directional only; the sample is tiny.)
-- **Risk-engine interventions** — every `resized` / `rejected` in `adapter` / `risk_result`, with the reason.
+- **Risk-engine interventions** — every `resized` / `rejected` in a decision log's `adapter` / `risk_result`, and every stop / drawdown / daily-loss exit in a `logs/risk/` record, with the reason.
 - **Possible overtrading** — cycles near the daily order cap; churn in the same symbol.
 - **Contradictory theses** — a symbol bought and sold, or opposite theses across nearby cycles.
-- **Technical failures** — non-empty `errors`, failed steps, missing cycles (gaps in the hourly slot ids), workflow-health anomalies.
+- **Technical failures** — non-empty `errors`, failed steps, missing runs (gaps in the `experiment-` 4-hourly slots or the `risk-` hourly slots), workflow-health anomalies.
 - **Anomalies requiring manual inspection** — anything that needs Stanley's eyes.
 
 Keep it factual. Do not recommend or apply strategy changes; a 24-hour result is

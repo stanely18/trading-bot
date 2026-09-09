@@ -33,6 +33,16 @@ Architecture realignment. No live run has begun; the 30-day clock starts when
 - Cowork repurposed to **read-only daily/weekly reviewer**; it does not trade,
   and does not modify strategy, prompt, risk parameters or code.
 
-## infra — YYYY-MM-DD
+## infra — 2026-09-09
+
+- Added `risk-monitor` workflow: an hourly deterministic safety pass
+  (`trading_bot.cycle.run_risk_check`, CLI `risk-check`) that runs a HOLD
+  proposal through RiskGateway between the 4-hour Kimi cycles, so stop-loss /
+  drawdown / daily-loss exits execute within <= 1h instead of <= 4h. No model,
+  no indicators, no benchmark rebalance; `risk-` run_id prefix; light
+  `logs/risk/<run_id>.json`. The **trading decision cadence stays 4h** — the
+  fixed experiment condition is unchanged, so this is infra, not a version bump.
+
+## infra — template
 
 _(bug-fix entries go here; no version bump)_

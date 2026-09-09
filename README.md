@@ -14,7 +14,8 @@ LLM 覆寫的風控層。MacBook 不需要 24/7 開機。
 
 | 元件 | 角色 |
 |---|---|
-| `.github/workflows/trading-cycle.yml` | 主 runtime，每 4h UTC + 手動 dispatch，一次一個 cycle，結束 commit state/logs/trades |
+| `.github/workflows/trading-cycle.yml` | 主 runtime，每 4h UTC + 手動 dispatch，一次一個 cycle（Kimi 決策），結束 commit state/logs/trades |
+| `.github/workflows/risk-monitor.yml` | 每小時 deterministic 安全網：無模型，抓行情 → RiskGateway HOLD（執行停損／回撤／日虧損退出）→ commit。`risk-` run_id 前綴，`logs/risk/`。停損延遲 ≤1h |
 | `trading_bot/model/`（`NvidiaKimiClient`）| Kimi K3 → `schemas/agent-output.schema.json`（market_regime / portfolio_view / ranked candidates）。可替換介面，換 NVIDIA 其他模型不動交易邏輯。缺 `NVIDIA_API_KEY` 明確 fail |
 | `trading_bot/core.py`（`RiskGateway` / `POLICY`）| 唯一動餘額的程式。固定風控、版本檢查、idempotency、atomic SQLite、hash chain。**未變動** |
 | `trading_bot/cycle.py` | 13 步 cycle；把 candidates 轉內部 proposal，**notional 由 Python 算**（RESIZE 點），每次 resize/reject 落 `logs/decisions/` |

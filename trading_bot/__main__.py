@@ -17,7 +17,7 @@ def _model_client(name):
 def main():
     p=argparse.ArgumentParser(description='Paper-only gateway; never sends exchange orders')
     p.add_argument('--db',default='state/paper.sqlite3')
-    p.add_argument('command',choices=['init','state','market','run','cycle','export','halt','probe-demo'])
+    p.add_argument('command',choices=['init','state','market','run','cycle','risk-check','export','halt','probe-demo'])
     p.add_argument('--proposal',help='strict JSON proposal; omitted means HOLD')
     p.add_argument('--run-id',help='stable scheduled slot id; do not generate a new id on retry')
     p.add_argument('--root',default='.',help='repo root for cycle state/logs/trades projections')
@@ -33,6 +33,10 @@ def main():
         from .cycle import run_cycle
         if not a.run_id: raise SystemExit('cycle requires --run-id (stable slot id, reused on retry)')
         out=run_cycle(a.db,a.run_id,model_client=_model_client(a.model),root=a.root)
+    elif a.command=='risk-check':
+        from .cycle import run_risk_check
+        if not a.run_id: raise SystemExit('risk-check requires --run-id (use a risk-* prefix, distinct from trading slots)')
+        out=run_risk_check(a.db,a.run_id,root=a.root)
     else:
         if a.proposal:
             with open(a.proposal) as f: proposal=json.load(f)

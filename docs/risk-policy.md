@@ -51,8 +51,13 @@ notional = floor2( min( raw,
 真 Demo 下單前需改 Decimal、商品規格檢查、持久 outbox、clOrdId、防重送與對帳。
 
 **停損不是保證損失上限。** 每次 run 才檢查；跳空、排程缺漏、斷網會超過 0.5% 計畫風險、
-2% 日虧損、10% 回撤閾值，程式只在下一次可用行情時處理。4h cadence 比舊的 hourly
-更容易在單一 cycle 內出現較大跳空 —— 這是刻意的實驗條件，reviewer 應留意。
+2% 日虧損、10% 回撤閾值，程式只在下一次可用行情時處理。
+
+**兩層 cadence（2026-09-09）**：Kimi 的**交易決策**維持每 4h 一次（固定實驗條件）。
+另有 `risk-monitor` workflow **每小時**跑 `risk-check`：不呼叫任何模型，只抓行情 →
+RiskGateway 跑一個 HOLD proposal（仍會執行停損／回撤／日虧損／期滿退出）→ commit。
+`run_id` 用 `risk-` 前綴，與 4h 交易 slot（`experiment-`）分開；輸出在 `logs/risk/`。
+這把停損執行延遲從 ≤4h 降到 ≤1h，但跳空／缺漏／斷網下仍不保證提前攔截。
 
 LLM 只能使用受限介面（NVIDIA API 回傳文字）；在 GitHub Actions runner 內沒有 shell、
 檔案寫入權或 secret 讀取權。HOLD 請求也會執行既有部位的必要風控退出。

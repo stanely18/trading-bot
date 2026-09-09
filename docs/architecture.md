@@ -11,6 +11,7 @@ universe = BTC / ETH / SOL / BNB / XRP-USDT。沒有槓桿、借貸或真錢。
 | 元件 | 角色 | 不做的事 |
 |---|---|---|
 | **GitHub Actions** (`.github/workflows/trading-cycle.yml`) | 主 runtime。每 4h + 手動 dispatch 各跑一次完整 cycle；stateless runner，從 git 載入前次 state，結束時 commit 新 state/logs/trades | 不依賴本機 Mac、Claude Code 或 Claude Desktop 在線 |
+| **GitHub Actions** (`.github/workflows/risk-monitor.yml`) | 每小時的 deterministic 安全網：不呼叫模型，抓行情 → RiskGateway 跑 HOLD（仍執行停損／回撤／日虧損／期滿退出）→ commit。`risk-` run_id 前綴，`logs/risk/`。把停損延遲從 ≤4h 降到 ≤1h | 不改變 Kimi 的 4h 決策 cadence（固定實驗條件）|
 | **Kimi K3**（NVIDIA NIM，`trading_bot/model/`）| 主 trading agent。讀整理好的 market snapshot + indicators + portfolio，輸出 `schemas/agent-output.schema.json`：market_regime、portfolio_view、ranked candidates（含 confidence / target_allocation / thesis / invalidation / risk_notes）| 不呼叫交易所、不算 USDT 部位大小、不碰 policy／DB／金鑰 |
 | **Python RiskGateway**（`trading_bot/core.py`，未變動）| 唯一會動到餘額的程式。固定 POLICY、版本檢查、idempotency、atomic SQLite transaction、hash chain | 沒有可被 prompt 覆寫的欄位 |
 | **`trading_bot/cycle.py` adapter** | 把 Kimi 的 candidates 轉成 RiskGateway 內部 proposal；**notional 一律由 Python 以 `min(target_allocation, caps) × NAV` 計算** —— 這是 RESIZE 點；每次 resize／reject 寫入 `logs/decisions/` | 不信任 Kimi 給的數字 |

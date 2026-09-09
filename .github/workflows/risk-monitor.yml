@@ -1,0 +1,66 @@
+name: risk-monitor
+
+# Deterministic hourly safety pass between the 4-hour Kimi trading cycles.
+# No model, no indicators, no benchmark rebalance: it fetches trusted market and
+# runs a HOLD proposal through RiskGateway, which still executes stop-loss /
+# drawdown / daily-loss / expiry exits. This bounds stop latency to <= 1h while
+# the LLM trading decision stays a fixed 4-hour experiment condition.
+#
+# run_id uses a `risk-` prefix so it never occupies a trading slot id. Shares the
+# `trading-cycle` concurrency group so it can never write the SQLite ledger at
+# the same moment as trading-cycle. No `push` trigger -> the bot commit cannot
+# start another run.
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: trading-cycle
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  risk-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Resolve run slot id
+        id: slot
+        run: echo "run_id=risk-$(date -u +%Y-%m-%dT%H)Z" >> "$GITHUB_OUTPUT"
+
+      - name: Guard against a missing ledger
+        run: |
+          if [ ! -f state/experiment.sqlite3 ]; then
+            echo "::error::state/experiment.sqlite3 is missing. Bootstrap it once locally and commit it."
+            exit 1
+          fi
+
+      - name: Run deterministic risk check
+        run: |
+          python -m trading_bot \
+            --db state/experiment.sqlite3 \
+            --root . \
+            risk-check --run-id "${{ steps.slot.outputs.run_id }}"
+
+      - name: Commit updated experiment records
+        if: always()
+        run: |
+          git config user.name  "trading-bot[bot]"
+          git config user.email "trading-bot@users.noreply.github.com"
+          git add state/ logs/ trades/ 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No experiment changes to commit."
+          else
+            git commit -m "risk-check ${{ steps.slot.outputs.run_id }} [skip ci]"
+            git push
+          fi

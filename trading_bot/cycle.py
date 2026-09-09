@@ -375,3 +375,89 @@ def run_cycle(db, run_id, *, model_client=None, root='.', deadline_ms=40000,
             'revision': portfolio_after['revision'],
             'model_status': agent_record.get('status'),
             'errors': health['errors']}
+
+
+def run_risk_check(db, run_id, *, root='.', now_ms_fn=now_ms, market_fn=fetch):
+    """Hourly deterministic safety pass between the 4-hour Kimi cycles.
+
+    No model, no indicators, no benchmark rebalance. Fetches trusted market and
+    runs a HOLD proposal through RiskGateway, which still executes stop-loss /
+    drawdown / daily-loss / expiry exits. Writes light projections and a compact
+    logs/risk/<run_id>.json. `run_id` MUST use a distinct prefix (e.g. 'risk-')
+    so it never occupies a 4-hour trading slot id.
+    """
+    root = Path(root)
+    started = time.monotonic()
+    health = {'run_id': run_id, 'kind': 'risk_check',
+              'started_utc': _utc(now_ms_fn()), 'steps': {}, 'errors': []}
+    store = Store(db)
+    portfolio_before = store.read()  # never auto-init
+    health['steps']['load_state'] = 'ok'
+    replay = next((r for r in store.records() if r['run_id'] == run_id), None)
+    t = now_ms_fn()
+
+    if replay:
+        market, proposal = replay['market'], replay['proposal']
+        health['steps']['market'] = 'replay'
+    else:
+        try:
+            market = market_fn()
+            health['steps']['market'] = 'ok'
+        except Exception as e:
+            health['steps']['market'] = 'failed'
+            health['errors'].append(f'market:{type(e).__name__}:{e}')
+            _atomic_json(root / 'logs' / 'workflow' / f'{run_id}.json',
+                         {**health, 'result': 'aborted_no_market',
+                          'duration_ms': int((time.monotonic() - started) * 1000)})
+            raise
+        proposal = dict(id=run_id, created_ms=t, expected_revision=portfolio_before['revision'],
+                        agent='risk-monitor', action='HOLD', symbol='BTC-USDT', notional=0,
+                        reason='hourly deterministic risk check')
+
+    try:
+        result = RiskGateway(store).run(proposal, market, t)
+        health['steps']['risk_gateway'] = result['status']
+    except Exception as e:
+        health['steps']['risk_gateway'] = 'failed'
+        health['errors'].append(f'risk_gateway:{type(e).__name__}:{e}')
+        _atomic_json(root / 'logs' / 'workflow' / f'{run_id}.json',
+                     {**health, 'result': 'risk_gateway_error',
+                      'duration_ms': int((time.monotonic() - started) * 1000)})
+        raise
+
+    portfolio_after = store.read()
+    pnl = _pnl(portfolio_after, market)
+    exits = [f for f in result['fills'] if f['reason'] != 'proposal']
+
+    _atomic_json(root / 'state' / 'portfolio.json', portfolio_after)
+    _atomic_json(root / 'state' / 'risk_state.json', _risk_state(portfolio_after, market))
+
+    record = {
+        'run_id': run_id, 'kind': 'risk_check',
+        'recorded_utc': _utc(result['recorded_ms']), 'recorded_ms': result['recorded_ms'],
+        'revision_before': portfolio_before['revision'], 'revision_after': portfolio_after['revision'],
+        'market': {s: {'price': market[s]['price'], 'ts_ms': market[s]['ts_ms']} for s in SYMBOLS},
+        'risk_status': result['status'], 'risk_reason': result['reason'],
+        'risk_exits': exits, 'halted': portfolio_after['halted'],
+        'positions_after': list(portfolio_after['positions']),
+        'pnl': pnl, 'hash': result['hash'], 'previous_hash': result['previous_hash'],
+        'errors': health['errors'],
+    }
+    risk_path = root / 'logs' / 'risk' / f'{run_id}.json'
+    if not (replay and risk_path.exists()):
+        _atomic_json(risk_path, record)
+    if exits and not replay:
+        _append_trades(root / 'trades' / 'trades.csv', run_id, result['recorded_ms'], result['fills'])
+
+    health.update({'result': 'ok', 'risk_status': result['status'], 'risk_reason': result['reason'],
+                   'risk_exits': len(exits), 'pnl': pnl, 'finished_utc': _utc(now_ms_fn()),
+                   'duration_ms': int((time.monotonic() - started) * 1000)})
+    _atomic_json(root / 'logs' / 'workflow' / f'{run_id}.json', health)
+    if health['errors']:
+        _atomic_json(root / 'logs' / 'errors' / f'{run_id}.json',
+                     {'run_id': run_id, 'recorded_utc': _utc(result['recorded_ms']),
+                      'errors': health['errors'], 'steps': health['steps']})
+    return {'run_id': run_id, 'kind': 'risk_check', 'status': result['status'],
+            'reason': result['reason'], 'risk_exits': exits, 'pnl': pnl,
+            'revision': portfolio_after['revision'], 'halted': portfolio_after['halted'],
+            'errors': health['errors']}
