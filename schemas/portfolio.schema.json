@@ -101,6 +101,52 @@
             "stop_price"
           ],
           "additionalProperties": false
+        },
+        "BNB-USDT": {
+          "type": "object",
+          "properties": {
+            "qty": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "entry_price": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "stop_price": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "qty",
+            "entry_price",
+            "stop_price"
+          ],
+          "additionalProperties": false
+        },
+        "XRP-USDT": {
+          "type": "object",
+          "properties": {
+            "qty": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "entry_price": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "stop_price": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "qty",
+            "entry_price",
+            "stop_price"
+          ],
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -141,7 +187,9 @@
                   "enum": [
                     "BTC-USDT",
                     "ETH-USDT",
-                    "SOL-USDT"
+                    "SOL-USDT",
+                    "BNB-USDT",
+                    "XRP-USDT"
                   ]
                 },
                 "price": {
@@ -174,7 +222,9 @@
                   "enum": [
                     "BTC-USDT",
                     "ETH-USDT",
-                    "SOL-USDT"
+                    "SOL-USDT",
+                    "BNB-USDT",
+                    "XRP-USDT"
                   ]
                 },
                 "price": {
@@ -207,7 +257,79 @@
                   "enum": [
                     "BTC-USDT",
                     "ETH-USDT",
-                    "SOL-USDT"
+                    "SOL-USDT",
+                    "BNB-USDT",
+                    "XRP-USDT"
+                  ]
+                },
+                "price": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "ts_ms": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "source": {
+                  "enum": [
+                    "okx_public",
+                    "fixture"
+                  ]
+                }
+              },
+              "required": [
+                "symbol",
+                "price",
+                "ts_ms",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "BNB-USDT": {
+              "type": "object",
+              "properties": {
+                "symbol": {
+                  "enum": [
+                    "BTC-USDT",
+                    "ETH-USDT",
+                    "SOL-USDT",
+                    "BNB-USDT",
+                    "XRP-USDT"
+                  ]
+                },
+                "price": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "ts_ms": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "source": {
+                  "enum": [
+                    "okx_public",
+                    "fixture"
+                  ]
+                }
+              },
+              "required": [
+                "symbol",
+                "price",
+                "ts_ms",
+                "source"
+              ],
+              "additionalProperties": false
+            },
+            "XRP-USDT": {
+              "type": "object",
+              "properties": {
+                "symbol": {
+                  "enum": [
+                    "BTC-USDT",
+                    "ETH-USDT",
+                    "SOL-USDT",
+                    "BNB-USDT",
+                    "XRP-USDT"
                   ]
                 },
                 "price": {
@@ -237,7 +359,9 @@
           "required": [
             "BTC-USDT",
             "ETH-USDT",
-            "SOL-USDT"
+            "SOL-USDT",
+            "BNB-USDT",
+            "XRP-USDT"
           ],
           "additionalProperties": false
         },

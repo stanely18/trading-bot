@@ -1,42 +1,73 @@
-# 架構與實驗提案
+# 架構 v1.0
 
-## 目標與範圍
+核心原則：**Kimi trades. Python controls risk. GitHub Actions runs the system.
+Claude Code maintains it. Cowork reviews it.**
 
-主 orchestrator 為 Claude Cowork cloud。先證實基礎設施能持續執行，再啟動 30 日 paper 實驗，初始 10,000 USDT 虛擬資金，UTC 每小時一次。POC 僅現貨 BTC、ETH、SOL；沒有槓桿、借貸或真錢。
+30 日 paper 實驗，初始 10,000 USDT 虛擬資金，UTC 每 4 小時一次，現貨、多頭，
+universe = BTC / ETH / SOL / BNB / XRP-USDT。沒有槓桿、借貸或真錢。
+
+## 元件角色
+
+| 元件 | 角色 | 不做的事 |
+|---|---|---|
+| **GitHub Actions** (`.github/workflows/trading-cycle.yml`) | 主 runtime。每 4h + 手動 dispatch 各跑一次完整 cycle；stateless runner，從 git 載入前次 state，結束時 commit 新 state/logs/trades | 不依賴本機 Mac、Claude Code 或 Claude Desktop 在線 |
+| **Kimi K3**（NVIDIA NIM，`trading_bot/model/`）| 主 trading agent。讀整理好的 market snapshot + indicators + portfolio，輸出 `schemas/agent-output.schema.json`：market_regime、portfolio_view、ranked candidates（含 confidence / target_allocation / thesis / invalidation / risk_notes）| 不呼叫交易所、不算 USDT 部位大小、不碰 policy／DB／金鑰 |
+| **Python RiskGateway**（`trading_bot/core.py`，未變動）| 唯一會動到餘額的程式。固定 POLICY、版本檢查、idempotency、atomic SQLite transaction、hash chain | 沒有可被 prompt 覆寫的欄位 |
+| **`trading_bot/cycle.py` adapter** | 把 Kimi 的 candidates 轉成 RiskGateway 內部 proposal；**notional 一律由 Python 以 `min(target_allocation, caps) × NAV` 計算** —— 這是 RESIZE 點；每次 resize／reject 寫入 `logs/decisions/` | 不信任 Kimi 給的數字 |
+| **Claude Code** | 開發、review、debug、改 Kimi prompt／策略／風控參數、分析 log、維護 repo | 不是 runtime；架構不要求它常駐 |
+| **Claude Cowork** | 唯讀 daily／weekly reviewer，產 `reports/` | 不下單、不改策略／prompt／風控／程式／state、不排程 cycle |
 
 ```text
-Cowork cloud scheduled session
-  ├─ 取得唯讀 portfolio / market snapshot
-  ├─ 可選遠端 research / strategy / risk-review tools
-  └─ 僅提交符合 schema 的 proposal
-                  ↓ HTTPS + authenticated narrow API
-固定 Python RiskGateway（可信任服務）
-  ├─ 自行抓 OKX public market
-  ├─ 固定風控、版本檢查、idempotency
-  ├─ paper fill（交易所下單尚未實作）
-  └─ SQLite transaction → portfolio + runs（持久磁碟）
+GitHub Actions（每 4h UTC / workflow_dispatch）
+  1 載入 state/experiment.sqlite3 + state/*.json（git）
+  2 讀 risk_state
+  3 抓 OKX public market（5 symbols ticker）
+  4 抓 candles → 計算 deterministic indicators（SMA/RSI/momentum/vol/trend）
+  5 組 Kimi context
+  6 呼叫 Kimi K3（NVIDIA_API_KEY 來自 GitHub Secret；缺 key → 明確 fail → 該 cycle HOLD）
+  7 驗證 agent JSON（schemas/agent-output.schema.json）
+  8 Python 選單一最高信心 candidate + 計算 notional（RESIZE / REJECT）
+  9 RiskGateway.run(proposal, market) → paper fill（atomic）
+ 10 讀 portfolio after
+ 11 寫 state/portfolio.json、risk_state.json、agent_state.json、experiment.json（含 benchmarks）
+ 12 寫 logs/decisions/<run_id>.json、append trades/trades.csv
+ 13 寫 logs/workflow/<run_id>.json（health / errors）
+  → git commit "cycle <run_id> [skip ci]" + push（無 push trigger，不會遞迴）
 ```
 
-## 執行邊界
+## 信任邊界（v1.0 相較舊版的改善）
 
-本機版已實作 CLI 與 HTTP bridge。雲端版是部署提案，尚無雲端主機／DNS／認證。若直接讓 Cowork 在自己的 sandbox 執行 Python，必須先證明程式與 SQLite 跨 session 保留；即使保留，LLM 有檔案寫入權也能改掉風控，因此只能視為基礎設施測試。
+舊版把 LLM 放進能執行 shell 的 sandbox，因此「LLM 不能改風控」不是可強制的邊界。
+v1.0 下 **Kimi 只透過 NVIDIA HTTPS API 回傳文字**，在 GitHub Actions runner 內沒有
+shell、沒有檔案系統寫入權、看不到 repo secret 以外的東西；`cycle.py` 與 RiskGateway
+才是 runner 內執行的程式，Kimi 無法觸及。這使「模型只能建議、Python 強制風控」在
+這個 runtime 下實際成立。
 
-要讓「LLM 不能 override」成為權限上可強制的邊界，需把 gateway 放到獨立服務：模型只有 `/state` 與 `/proposals` 的 token，無 shell、程式／policy／DB 寫入權與交易所金鑰。當前 Python 固定 policy + strict input 能防止透過 proposal 覆寫，但無法防止同一 OS 使用者直接改程式。hash chain 是一致性檢查，不是防惡意管理員的不可竄改儲存。
+殘留風險（誠實揭露）：
 
-SQLite 只支援單一可信任 host 的持久磁碟；不能靠不同 Cowork sandbox 各自複製 DB。多節點未實作，未來用具唯一鍵與 compare-and-swap 的 PostgreSQL transaction backend，保留相同資料契約。
+- 有 repo write 權的人（或被入侵的 Actions token）仍可改 `core.py`／POLICY 並 commit。
+  緩解：POLICY 變更會使既有 ledger 的 `policy_hash` 不符而拒絕執行；`CHANGELOG.md` +
+  `state/experiment.json.changelog` 留痕；branch protection 由 Stanley 決定。
+- `state/experiment.sqlite3` 進 git 是單一 committer（workflow）+ `concurrency` 序列化
+  的權宜做法。多節點 / 抗竄改儲存 → 未來換 Postgres compare-and-swap，資料契約不變。
+- Kimi 仍可能在額度內亂發合法小額 paper 單；`max_daily_orders` 與每筆上限限制影響。
 
 ## 30 日順序
 
-1. 啟動前：四項驗收完成，確認雲端 session、時鐘、資料來源、模型版本及持久化 backend。測試帳本不計入正式實驗。
-2. 第 1–3 日：HOLD + 公開行情 + 帳本，計算預定／成功／缺漏排程數；錯誤不重置本金。
-3. 第 4–7 日：固定策略或單一 LLM proposal；所有執行經同一 gateway。策略改動另立實驗版本。
-4. 第 8–30 日：只有前階段穩定才考慮多模型；每模型獨立帳本、相同 snapshot、相同 policy 和執行成本。
-5. 期滿：停止買入、下一次有效行情時 paper 平倉；保存完整帳本再分析。
+1. **啟動前**：`python -m trading_bot --db state/experiment.sqlite3 init` 一次並 commit；
+   設 GitHub Secret `NVIDIA_API_KEY`；`TRADING_MODEL` 先留 `none` 跑 1–2 天純基礎設施
+   （HOLD、benchmarks、log、commit 迴圈）確認排程穩定。
+2. 轉 `TRADING_MODEL=nvidia`（repo variable），實驗版本記為 v1.0，30 日計時從 ledger
+   `started_ms` 起算（720 個理論 4h... 實際 slot 依 start/end 對齊，分母用實際數）。
+3. 期間固定：Kimi system prompt、POLICY、universe、cadence。技術 bug 修可做，必記
+   `CHANGELOG.md`；動到策略條件必須 bump experiment version。
+4. 期滿：`ends_ms` 後 RiskGateway 對任何持倉做 paper 平倉（stop / experiment_ended），
+   保留完整 ledger 與 `logs/` 再分析。
 
-每小時 30 日理論 720 個 slot，分母須依實際 start/end 對齊。每 slot 使用固定 ID（experiment + UTC hour）；重試使用完全相同 proposal。失敗回報及缺漏由排程平台另存，不能只有成功 ledger。
+## 後續擴充點（v1.0 不做）
 
-## 後續模型介面
-
-`interfaces.py` 與 model request/response schemas 定義 request ID、provider/model、snapshot hash、role、deadline、usage。模型只能產生建議，risk-review 也不能批准突破 Python 限制。固定時限，無回應就明確記錄 unavailable，再由主 orchestrator 提出 HOLD；不得暗中切換供應商。此版本未實作或呼叫任何付費模型 backend。
-
-多模型比較需記錄各自 prompt/version、模型識別、延遲、tokens、拒絕率、換手及成本。後續分析器可加 return、max drawdown、benchmark-relative return；30 日樣本不能證明穩定超額報酬。報表／benchmark 計算尚非本版功能。
+多 candidate 同 cycle 執行；OKX Demo 真下單（`trading_bot/broker/OKXDemoBroker`，
+目前雙重關閉）；多模型比較（各自獨立 ledger、相同 snapshot / policy / 成本）；
+Postgres 狀態後端；Sharpe/Sortino 等完整報表（weekly reviewer 已預留）。
+`interfaces.py` 與 model request/response schema 保留 request id / provider / model /
+snapshot hash / usage / latency 欄位供之後使用。

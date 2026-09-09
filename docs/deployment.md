@@ -1,5 +1,12 @@
 # 遠端部署與介面
 
+> **v1.0 狀態**：主 runtime 已改為 GitHub Actions（`docs/architecture.md`），
+> 不再需要對外的 HTTP gateway 或獨立主機來啟動 30 日實驗。本文件描述的
+> `trading_bot/server.py` gateway 保留為**次要／選用** transport（例如日後要讓
+> 一個獨立服務隔離 RiskGateway、或給非 GitHub 的 orchestrator 用）。下方
+> 「獨立遠端 gateway 部署尚缺項目」清單對 v1.0 不是啟動前置條件，但仍是把
+> RiskGateway 變成檔案系統上 LLM 完全無法觸及之可信任服務的路線圖。
+
 HTTP gateway 已有最小實作，**不是 MCP server**，也尚未發布到網路。Cowork 能否直接呼叫 HTTP 需在該 cloud session 驗證；若只支援 remote MCP，需另外部署 MCP wrapper，僅映射此處窄 API，不提供 shell 或通用 HTTP proxy。
 
 ## 本機服務檢查
@@ -29,6 +36,12 @@ python3 -m trading_bot.server
 SQLite 必須位於單一 host 支援鎖定／同步的持久檔案系統；不要使用不支援鎖定的共享磁碟或直接複製運行中 DB。備份使用 SQLite backup API，恢復測試後才啟動排程。多節點需另實作交易式 DB backend。
 
 Codex 遠端模型擴充以 App Server service wrapper 為建議方向（尚未實作）；不得假定本機 stdio MCP 可由雲端存取。維持模型 context-only、禁止 gateway 檔案寫入、不自動新增 API 計費。
+
+## 2026-09-09T18:05Z 新增關鍵發現：Cowork 平台原生跨 session 持久化管道無法無人值守
+
+實測發現：本專案原先選用的跨獨立 cloud session 持久化管道（Claude Artifact 工具的 db capability）讀寫功能與 hash chain 完整性都正確，但**每一次 write_db 寫入，在一個全新的排程觸發 session 中，都會跳出對話內工具使用核准視窗，且只有「這次允許」、沒有「永遠允許/不再問」的選項**，必須使用者當下在場手動點擊才會繼續執行。這不是這個專案程式碼的問題，是 Cowork 平台對這類動作的既有安全設計（消費者導向的逐次核准 UI）。
+
+實務影響：目前沒有已驗證可行、且不需要使用者即時在場核准的跨 session 狀態持久化方式。這代表下面第 1～4 項「獨立主機／持久磁碟」的必要性，不只是「讓風控邊界可強制」的加分項，而是**讓正式 30 日排程能真正無人值守運作的必要條件**——只要還在用 Artifact db 這類消費者核准 UI 做狀態持久化，排程只要在使用者沒看對話時觸發，就有很高機率卡住（很可能就是本次驗證過程中第一次觸發異常卡住超過一小時的真正原因）。獨立部署的資料庫／持久磁碟走的是標準連線（如 HTTP API 帶 token、或直接的資料庫協定），不會經過這種核准 UI，是目前唯一已知能真正無人值守的路徑。
 
 ## 獨立遠端 gateway 部署尚缺項目（2026-09-09 盤點；僅列清單，不宣稱已部署）
 

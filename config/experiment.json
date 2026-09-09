@@ -1,18 +1,27 @@
 {
-  "schema_version": 1,
-  "orchestrator": "claude-cowork-cloud",
+  "schema_version": 2,
+  "experiment_version": "v1.0",
+  "runtime": "github-actions",
+  "reviewer": "claude-cowork-cloud",
   "mode": "paper",
   "days": 30,
-  "cadence": "hourly",
+  "cadence": "every_4h",
+  "cron_utc": "0 */4 * * *",
   "timezone": "UTC",
   "initial_cash_usdt": 10000,
   "symbols": [
     "BTC-USDT",
     "ETH-USDT",
-    "SOL-USDT"
+    "SOL-USDT",
+    "BNB-USDT",
+    "XRP-USDT"
   ],
-  "state_backend": "sqlite_on_persistent_single_host_volume",
-  "strategy": "baseline-hold",
+  "state_backend": "git_repo_json_plus_sqlite_ledger",
+  "strategy": "kimi-k3-single-candidate",
+  "model_provider": "nvidia_nim",
+  "model_name": "moonshotai/kimi-k3",
   "remote_model_enabled": false,
-  "demo_order_execution_enabled": false
+  "demo_order_execution_enabled": false,
+  "benchmarks": ["btc_buy_hold", "equal_weight", "momentum_baseline"],
+  "note": "Descriptive only. Enforced risk limits live in trading_bot/core.py POLICY and cannot be widened from here or from any prompt. Changing the enforced POLICY invalidates an existing ledger by design."
 }

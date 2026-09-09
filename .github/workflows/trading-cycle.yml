@@ -1,0 +1,81 @@
+name: trading-cycle
+
+# Primary unattended runtime for the 30-day paper experiment.
+# Runs every 4 hours (UTC) plus manual dispatch. Each run is a fresh, stateless
+# runner: it loads prior experiment state from the repo, runs ONE cycle, then
+# commits the updated state/logs/trades back.
+#
+# Recursion safety: this workflow has NO `push` trigger, so the bot commit it
+# makes cannot start another trading cycle. `concurrency` also prevents two
+# cycles from overlapping.
+
+on:
+  schedule:
+    - cron: "0 */4 * * *"
+  workflow_dispatch:
+    inputs:
+      model:
+        description: "Trading agent for this run (none = HOLD-only infra check)"
+        type: choice
+        options: ["none", "nvidia"]
+        default: "none"
+
+concurrency:
+  group: trading-cycle
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  cycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout experiment state
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Resolve run slot id (UTC hour, reused on retry)
+        id: slot
+        run: echo "run_id=experiment-$(date -u +%Y-%m-%dT%H)Z" >> "$GITHUB_OUTPUT"
+
+      - name: Guard against a missing ledger
+        run: |
+          if [ ! -f state/experiment.sqlite3 ]; then
+            echo "::error::state/experiment.sqlite3 is missing. Bootstrap it once locally"
+            echo "  ( python3 -m trading_bot --db state/experiment.sqlite3 init ) and commit it."
+            echo "The workflow never auto-initialises a ledger."
+            exit 1
+          fi
+
+      - name: Run one trading cycle
+        env:
+          # Model is optional. With TRADING_MODEL=none the cycle proposes HOLD and
+          # exercises only deterministic infrastructure. Switch to nvidia when the
+          # NVIDIA_API_KEY secret is configured and the experiment is ready.
+          TRADING_MODEL: ${{ github.event.inputs.model || vars.TRADING_MODEL || 'none' }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+        run: |
+          python -m trading_bot \
+            --db state/experiment.sqlite3 \
+            --root . \
+            --model "$TRADING_MODEL" \
+            cycle --run-id "${{ steps.slot.outputs.run_id }}"
+
+      - name: Commit updated experiment records
+        if: always()
+        run: |
+          git config user.name  "trading-bot[bot]"
+          git config user.email "trading-bot@users.noreply.github.com"
+          git add state/ logs/ trades/ reports/ 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No experiment changes to commit."
+          else
+            git commit -m "cycle ${{ steps.slot.outputs.run_id }} [skip ci]"
+            git push
+          fi

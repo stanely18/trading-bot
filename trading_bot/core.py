@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
-SYMBOLS = ('BTC-USDT', 'ETH-USDT', 'SOL-USDT')
+SYMBOLS = ('BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'BNB-USDT', 'XRP-USDT')
 POLICY = dict(version=1, mode='paper', initial_cash=10000.0, days=30,
               max_order_fraction=.10, max_position_fraction=.20, max_positions=3,
               daily_loss=.02, max_drawdown=.10, max_age_ms=60000,

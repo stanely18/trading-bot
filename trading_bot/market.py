@@ -31,6 +31,19 @@ def fetch():
     market_valid(result,now_ms())
     return result
 
+_BARS={'1m','3m','5m','15m','30m','1H','2H','4H','6H','12H','1D'}
+def fetch_candles(symbol,bar='1H',limit=100):
+    """Oldest-first [ts_ms,open,high,low,close,volume] from OKX public candles."""
+    if symbol not in SYMBOLS: raise ValueError('unknown symbol')
+    if bar not in _BARS: raise ValueError('unsupported bar')
+    if not 1<=int(limit)<=300: raise ValueError('limit out of range')
+    rows=get('/api/v5/market/candles?'+urlencode({'instId':symbol,'bar':bar,'limit':int(limit)}))
+    out=[]
+    for r in reversed(rows):
+        out.append([int(r[0]),float(r[1]),float(r[2]),float(r[3]),float(r[4]),float(r[5])])
+    if not out: raise ValueError('empty candles')
+    return out
+
 def demo_balance_probe():
     names=('OKX_DEMO_API_KEY','OKX_DEMO_SECRET_KEY','OKX_DEMO_PASSPHRASE')
     if not all(os.environ.get(k) for k in names): return {'status':'blocked','reason':'missing_demo_credentials'}
