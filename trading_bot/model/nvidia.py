@@ -8,6 +8,7 @@ risk code. The API key is read from the NVIDIA_API_KEY environment variable
 import json
 import os
 import time
+from urllib.error import HTTPError
 from urllib.request import Request, build_opener, HTTPRedirectHandler
 
 from .base import ModelClient, ModelError, ModelResponse
@@ -45,8 +46,19 @@ class NvidiaKimiClient(ModelClient):
                                'Content-Type': 'application/json',
                                'Accept': 'application/json',
                                'User-Agent': 'trading-bot-poc/0.1'})
-        with build_opener(_NoRedirect).open(req, timeout=timeout) as r:
-            raw = r.read(_MAX_BYTES + 1)
+        try:
+            with build_opener(_NoRedirect).open(req, timeout=timeout) as r:
+                raw = r.read(_MAX_BYTES + 1)
+        except HTTPError as e:
+            # Surface the HTTP status + a short body snippet (never the key) so a
+            # failed run's logs say *why* (bad key = 401, bad model = 404, rate
+            # limit = 429, bad request = 400, ...).
+            try:
+                detail = e.read(2000).decode('utf-8', 'replace').strip().replace('\n', ' ')
+            except Exception:
+                detail = ''
+            raise ModelError(f'HTTP {e.code} from {self.provider} for model '
+                             f'{self.model!r}: {detail[:400]}') from e
         if len(raw) > _MAX_BYTES:
             raise ValueError('oversized model response')
         return json.loads(raw)
@@ -73,8 +85,10 @@ class NvidiaKimiClient(ModelClient):
         started = time.monotonic()
         try:
             data = self._post(payload, timeout)
+        except ModelError:
+            raise  # already carries HTTP status + body detail
         except Exception as e:  # transport, timeout, decode
-            raise ModelError('model call failed: ' + type(e).__name__) from e
+            raise ModelError('model call failed: ' + type(e).__name__ + ': ' + str(e)[:200]) from e
         latency_ms = int((time.monotonic() - started) * 1000)
         try:
             content = data['choices'][0]['message']['content']
