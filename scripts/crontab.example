@@ -1,0 +1,19 @@
+# trading-bot — always-on VM crontab (see docs/oracle-vm-setup.md)
+#
+# All schedule fields are UTC. Keep the VM clock on UTC:  sudo timedatectl set-timezone UTC
+# Requires: git, python3 (>=3.11), flock (util-linux — preinstalled on Ubuntu).
+# Adjust the path if you cloned somewhere other than ~/trading-bot.
+#
+# Install:  crontab -e   → paste the two lines below (and the two env lines).
+
+SHELL=/bin/bash
+MAILTO=""
+
+# 4-hour Kimi trading cycle (00:00 / 04:00 / 08:00 / 12:00 / 16:00 / 20:00 UTC)
+0 */4 * * * $HOME/trading-bot/scripts/run_on_vm.sh cycle      >> $HOME/trading-bot-cron.log 2>&1
+
+# hourly deterministic risk check (stop-loss / drawdown / daily-loss exits)
+0 * * * *   $HOME/trading-bot/scripts/run_on_vm.sh risk-check >> $HOME/trading-bot-cron.log 2>&1
+
+# Optional: rotate the log weekly so it does not grow unbounded
+0 0 * * 0   tail -n 5000 $HOME/trading-bot-cron.log > $HOME/trading-bot-cron.log.tmp && mv $HOME/trading-bot-cron.log.tmp $HOME/trading-bot-cron.log
