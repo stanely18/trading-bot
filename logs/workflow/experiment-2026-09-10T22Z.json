@@ -1,11 +1,9 @@
 {
-  "duration_ms": 2844,
-  "errors": [
-    "model:model call failed: HTTPError"
-  ],
+  "duration_ms": 2,
+  "errors": [],
   "experiment_version": "v1.0",
   "fills": 0,
-  "finished_utc": "2026-09-10T22:15:34.769000Z",
+  "finished_utc": "2026-09-10T22:17:50.397000Z",
   "pnl": {
     "nav": 10000.0,
     "realized_pnl": 0.0,
@@ -16,12 +14,12 @@
   "risk_reason": "hold",
   "risk_status": "held",
   "run_id": "experiment-2026-09-10T22Z",
-  "started_utc": "2026-09-10T22:15:31.924000Z",
+  "started_utc": "2026-09-10T22:17:50.395000Z",
   "steps": {
-    "indicators": "ok",
+    "indicators": "replay",
     "load_state": "ok",
-    "market": "ok",
-    "model": "error_hold_fallback",
+    "market": "replay",
+    "model": "replay",
     "risk_gateway": "held"
   }
 }
