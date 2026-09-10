@@ -27,13 +27,18 @@ class _NoRedirect(HTTPRedirectHandler):
 class NvidiaKimiClient(ModelClient):
     provider = 'nvidia_nim'
 
+    # Kimi K3 on NVIDIA NIM pins these: top_p must be 0.95 for single-step
+    # (non-agentic) calls, and the model's documented profile uses temperature
+    # 1.0 with thinking always on. The strict system prompt + schema validation
+    # + HOLD fallback keep the structured output safe at that temperature.
     def __init__(self, api_key=None, base_url=DEFAULT_BASE_URL,
-                 model=DEFAULT_MODEL, timeout=45, temperature=0.2):
+                 model=DEFAULT_MODEL, timeout=45, temperature=1.0, top_p=0.95):
         self._key = api_key if api_key is not None else os.environ.get('NVIDIA_API_KEY') or None
         self.base_url = base_url.rstrip('/')
         self.model = model
         self.timeout = timeout
         self.temperature = temperature
+        self.top_p = top_p
 
     @property
     def available(self):
@@ -78,7 +83,7 @@ class NvidiaKimiClient(ModelClient):
                 {'role': 'user', 'content': json.dumps(request['context'], sort_keys=True)},
             ],
             'temperature': self.temperature,
-            'top_p': 0.9,
+            'top_p': self.top_p,
             'max_tokens': 1200,
             'response_format': {'type': 'json_object'},
         }
