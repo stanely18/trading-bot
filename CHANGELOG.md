@@ -6,15 +6,21 @@ Technical bug fixes that do not change strategy conditions are listed under a
 dated "infra" entry and do not bump the version. During a live 30-day run the
 fixed conditions are: Kimi system prompt, enforced POLICY, universe, cadence.
 
-## v1.0 — live start 2026-09-10T22:14:15Z
+## v1.0 — live start 2026-09-10T22:21:08Z (ends 2026-10-10T22:21:08Z)
 
 Kimi K3 enabled (`TRADING_MODEL=nvidia`, `NVIDIA_API_KEY` repo secret). The
-2026-09-09T20:50Z → 2026-09-10T22:14Z ledger was a HOLD-only infrastructure
+2026-09-09T20:50Z → 2026-09-10T22:21Z ledger was a HOLD-only infrastructure
 shakeout (GitHub `schedule:` reliability, projections, commit loop); it is
-discarded and its records live only in git history (commits `488ef6d`…`1287d60`).
+discarded and its records live only in git history.
 `state/experiment.sqlite3` was re-`init`ed so the 30-day clock counts from the
-first Kimi-driven cycle. Nothing about the strategy conditions changed, so this
-is still v1.0, not a new version.
+first Kimi-driven cycle (`experiment-2026-09-10T22Z`, request
+`chatcmpl-a190904b`). Nothing about the strategy conditions changed, so this is
+still v1.0, not a new version.
+
+Bring-up fix: NIM rejected the initial call — `top_p` is immutable for Kimi K3
+and must be `0.95`; the client now sends `top_p=0.95`, `temperature=1.0` (the
+model's documented single-step profile) and surfaces the HTTP status + body on
+any future model failure.
 
 Architecture realignment (unchanged from the shakeout):
 
