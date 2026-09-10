@@ -6,10 +6,17 @@ Technical bug fixes that do not change strategy conditions are listed under a
 dated "infra" entry and do not bump the version. During a live 30-day run the
 fixed conditions are: Kimi system prompt, enforced POLICY, universe, cadence.
 
-## v1.0 — baseline (not yet started)
+## v1.0 — live start 2026-09-10T22:14:15Z
 
-Architecture realignment. No live run has begun; the 30-day clock starts when
-`state/experiment.sqlite3` is initialised and committed.
+Kimi K3 enabled (`TRADING_MODEL=nvidia`, `NVIDIA_API_KEY` repo secret). The
+2026-09-09T20:50Z → 2026-09-10T22:14Z ledger was a HOLD-only infrastructure
+shakeout (GitHub `schedule:` reliability, projections, commit loop); it is
+discarded and its records live only in git history (commits `488ef6d`…`1287d60`).
+`state/experiment.sqlite3` was re-`init`ed so the 30-day clock counts from the
+first Kimi-driven cycle. Nothing about the strategy conditions changed, so this
+is still v1.0, not a new version.
+
+Architecture realignment (unchanged from the shakeout):
 
 - Runtime moved to **GitHub Actions** (`.github/workflows/trading-cycle.yml`),
   one cycle every 4h UTC + manual dispatch. Cowork is no longer the runtime.

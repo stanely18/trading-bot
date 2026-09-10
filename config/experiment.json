@@ -22,8 +22,9 @@
   "strategy": "kimi-k3-single-candidate",
   "model_provider": "nvidia_nim",
   "model_name": "moonshotai/kimi-k3",
-  "remote_model_enabled": false,
+  "remote_model_enabled": true,
   "demo_order_execution_enabled": false,
+  "relaunched_utc": "2026-09-10T22:14:15Z",
   "benchmarks": ["btc_buy_hold", "equal_weight", "momentum_baseline"],
   "note": "Descriptive only. Enforced risk limits live in trading_bot/core.py POLICY and cannot be widened from here or from any prompt. Changing the enforced POLICY invalidates an existing ledger by design."
 }
