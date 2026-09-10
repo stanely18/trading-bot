@@ -1,0 +1,63 @@
+{
+  "benchmark_vs_strategy": {
+    "btc_buy_hold": 10000.0,
+    "equal_weight": 10000.0,
+    "momentum_baseline": 10000.0,
+    "strategy_nav": 10000.0
+  },
+  "benchmarks": {
+    "btc_units": 0.12959495098070978,
+    "equity": {
+      "btc_buy_hold": 9999.999999999998,
+      "equal_weight": 10000.0,
+      "momentum_baseline": 10000.0
+    },
+    "ew_units": {
+      "BNB-USDT": 2.7968116347364003,
+      "BTC-USDT": 0.02591899019614196,
+      "ETH-USDT": 0.8136299285632923,
+      "SOL-USDT": 20.00600180054016,
+      "XRP-USDT": 1476.6686355581808
+    },
+    "initial_cash": 10000.0,
+    "mom_cash": 0.0,
+    "mom_units": {
+      "BNB-USDT": 3.4960145434205003,
+      "BTC-USDT": 0.032398737745177444,
+      "ETH-USDT": 1.0170374107041154,
+      "SOL-USDT": 25.007502250675202,
+      "XRP-USDT": 0.0
+    },
+    "start_prices": {
+      "BNB-USDT": 715.1,
+      "BTC-USDT": 77163.5,
+      "ETH-USDT": 2458.12,
+      "SOL-USDT": 99.97,
+      "XRP-USDT": 1.3544
+    }
+  },
+  "cadence": "every_4h",
+  "changelog": [
+    {
+      "change": "baseline: 5-symbol spot universe, every-4h cadence, Kimi K3 agent, fixed POLICY",
+      "utc": "2026-09-10T22:14:15.804000Z",
+      "version": "v1.0"
+    }
+  ],
+  "ends_ms": 1791670455804,
+  "experiment_version": "v1.0",
+  "initial_cash_usdt": 10000.0,
+  "last_recorded_utc": "2026-09-10T22:15:31.925000Z",
+  "last_run_id": "experiment-2026-09-10T22Z",
+  "mode": "paper",
+  "policy_hash": "bdff808238ed7472736a699c5901733cb77de296b625c2cb22a49b2ff28f0723",
+  "started_ms": 1789078455804,
+  "timezone": "UTC",
+  "universe": [
+    "BTC-USDT",
+    "ETH-USDT",
+    "SOL-USDT",
+    "BNB-USDT",
+    "XRP-USDT"
+  ]
+}
