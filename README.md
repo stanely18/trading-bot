@@ -16,7 +16,7 @@ LLM 覆寫的風控層。MacBook 不需要 24/7 開機。
 |---|---|
 | `.github/workflows/trading-cycle.yml` | 主 runtime，每 4h UTC + 手動 dispatch，一次一個 cycle（Kimi 決策），結束 commit state/logs/trades |
 | `.github/workflows/risk-monitor.yml` | 每小時 deterministic 安全網：無模型，抓行情 → RiskGateway HOLD（執行停損／回撤／日虧損退出）→ commit。`risk-` run_id 前綴，`logs/risk/`。停損延遲 ≤1h |
-| `scripts/run_on_vm.sh` + `scripts/crontab.example` + `docs/oracle-vm-setup.md` | 排程 runtime 替代方案：GitHub `schedule:` 會延遲/丟 tick 時，改用常開的 Oracle Cloud Always Free VM + 系統 cron 跑同一份程式（VM 成為帳本唯一寫入者，GitHub workflow disable 留作手動 fallback）|
+| `scripts/run_on_vm.sh` + `scripts/crontab.example` + `docs/vm-runtime-setup.md` | 排程 runtime 替代方案：GitHub `schedule:` 會延遲/丟 tick 時，改用常開 VM（Azure B1s 免費 12 個月為主，GCP/Hetzner/外部 cron 為備）+ 系統 cron 跑同一份程式（VM 成為帳本唯一寫入者，GitHub workflow disable 留作手動 fallback）|
 | `trading_bot/model/`（`NvidiaKimiClient`）| Kimi K3 → `schemas/agent-output.schema.json`（market_regime / portfolio_view / ranked candidates）。可替換介面，換 NVIDIA 其他模型不動交易邏輯。缺 `NVIDIA_API_KEY` 明確 fail |
 | `trading_bot/core.py`（`RiskGateway` / `POLICY`）| 唯一動餘額的程式。固定風控、版本檢查、idempotency、atomic SQLite、hash chain。**未變動** |
 | `trading_bot/cycle.py` | 13 步 cycle；把 candidates 轉內部 proposal，**notional 由 Python 算**（RESIZE 點），每次 resize/reject 落 `logs/decisions/` |
