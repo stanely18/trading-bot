@@ -29,8 +29,15 @@ case "$MODE" in
 esac
 
 ENV_FILE="${ENV_FILE:-$HOME/trading-bot.env}"
-# shellcheck disable=SC1090
-[ -f "$ENV_FILE" ] && . "$ENV_FILE"
+if [ -f "$ENV_FILE" ]; then
+  set -a  # auto-export every var sourced below, so the python subprocess (and
+          # any later commands) actually sees NVIDIA_API_KEY / TRADING_MODEL /
+          # etc. -- a plain `. "$ENV_FILE"` without this only sets shell-local
+          # variables and NVIDIA_API_KEY silently never reaches os.environ.
+  # shellcheck disable=SC1090
+  . "$ENV_FILE"
+  set +a
+fi
 
 SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="${REPO_DIR:-$(cd "$SELF_DIR/.." && pwd)}"
