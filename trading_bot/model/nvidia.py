@@ -96,11 +96,23 @@ class NvidiaKimiClient(ModelClient):
             raise ModelError('model call failed: ' + type(e).__name__ + ': ' + str(e)[:200]) from e
         latency_ms = int((time.monotonic() - started) * 1000)
         try:
-            content = data['choices'][0]['message']['content']
+            message = data['choices'][0]['message']
+        except Exception as e:
+            keys = list(data)[:10] if isinstance(data, dict) else type(data).__name__
+            raise ModelError(f'model output invalid: {type(e).__name__}: {e} '
+                             f'| top-level response keys: {keys}') from e
+        content = message.get('content')
+        try:
             output = json.loads(content)
+        except Exception as e:
+            raise ModelError(f'model output invalid: {type(e).__name__}: {e} '
+                             f'| content snippet: {str(content)[:300]!r}') from e
+        try:
             validate_agent_output(output)
         except Exception as e:
-            raise ModelError('model output invalid: ' + type(e).__name__) from e
+            keys = list(output) if isinstance(output, dict) else type(output).__name__
+            raise ModelError(f'model output invalid: {type(e).__name__}: {e} '
+                             f'| parsed keys: {keys} | snippet: {json.dumps(output)[:300]}') from e
         return ModelResponse(
             request_id=str(data.get('id') or request['request_id']),
             provider=self.provider,
