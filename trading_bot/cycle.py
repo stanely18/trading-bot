@@ -28,7 +28,7 @@ from . import benchmarks, indicators
 from .model import ModelError
 from .model.validate import validate_agent_output
 
-EXPERIMENT_VERSION = 'v1.0'
+EXPERIMENT_VERSION = 'v1.1'
 _PROMPT_PATH = Path(__file__).resolve().parent.parent / 'prompts' / 'kimi-system.md'
 
 
@@ -331,7 +331,8 @@ def run_cycle(db, run_id, *, model_client=None, root='.', deadline_ms=40000,
     })
     exp.setdefault('changelog', [
         {'version': EXPERIMENT_VERSION, 'utc': _utc(portfolio_after['started_ms']),
-         'change': 'baseline: 5-symbol spot universe, every-4h cadence, Kimi K3 agent, fixed POLICY'}])
+         'change': f'baseline: 5-symbol spot universe, every-4h cadence, Kimi K3 agent, '
+                   f'fixed POLICY, initial_cash_usdt={POLICY["initial_cash"]}'}])
     _atomic_json(exp_path, exp)
 
     # step 12: decision log + trades

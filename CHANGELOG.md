@@ -6,6 +6,33 @@ Technical bug fixes that do not change strategy conditions are listed under a
 dated "infra" entry and do not bump the version. During a live 30-day run the
 fixed conditions are: Kimi system prompt, enforced POLICY, universe, cadence.
 
+## v1.1 — live start 2026-09-11T02:33:47Z (ends 2026-10-11T02:33:47Z)
+
+**Strategy-condition change, so the version bumps.** Two things changed:
+
+- **Runtime moved from GitHub Actions to an AWS EC2 t3.micro cron VM.** GitHub
+  Actions' `schedule:` trigger proved unreliable in practice (one night: 3 of 9
+  hourly risk-monitor ticks fired, and a whole 4h trading-cycle tick was
+  dropped). `scripts/run_on_vm.sh` + `crontab.example` run the identical
+  `cycle` / `risk-check` code on a plain Ubuntu `cron`; see
+  `docs/vm-runtime-setup.md`. GitHub Actions workflows are kept, `disabled`,
+  as a manual fallback (`gh workflow run ...`). No change to trading logic.
+- **`POLICY['initial_cash']`: 10,000 → 10 USDT**, at Stanley's request, so the
+  paper P&L is denominated in numbers he can read at a glance. This is still
+  100% paper trading — no real capital was ever at risk at either scale, so
+  this changes the bookkeeping unit, not the risk taken. Position sizing scales
+  proportionally (same 10%/20%/0.5% caps), so order sizes are now cents rather
+  than hundreds of dollars.
+- **Bug fix while touching `core.py`**: `Store.init()` hardcoded
+  `peak_equity`/`day_equity`/`last_equity` to `10000.0` instead of reading
+  `POLICY['initial_cash']`. Invisible while `initial_cash` was actually 10000;
+  would have silently broken drawdown/daily-loss math at any other value.
+
+The v1.0 ledger (2026-09-10T22:21Z → 2026-09-11T02:33Z, ~4h, one live Kimi
+BUY on BNB-USDT) is discarded; records live only in git history. `policy_hash`
+changed with `initial_cash`, so the old ledger would have been rejected by
+`RiskGateway` regardless.
+
 ## v1.0 — live start 2026-09-10T22:21:08Z (ends 2026-10-10T22:21:08Z)
 
 Kimi K3 enabled (`TRADING_MODEL=nvidia`, `NVIDIA_API_KEY` repo secret). The

@@ -7,7 +7,7 @@
 | 規則 | 數值／行為 |
 |---|---|
 | 模式 | 僅 paper；沒有 live 或 Demo 下單路由（`OKXDemoBroker` 下單雙重關閉） |
-| 起始本金／期限 | 10,000 USDT／30 日 |
+| 起始本金／期限 | **10 USDT**／30 日（v1.1 起；v1.0 是 10,000 USDT） |
 | 交易範圍 | BTC、ETH、SOL、BNB、XRP-USDT 現貨、多頭（v1.0 由 3 擴為 5） |
 | 每筆名目額 | ≤ 當前 NAV 10% |
 | 單幣部位 | ≤ 當前 NAV 20%；禁止任何加碼（pyramiding_disabled） |

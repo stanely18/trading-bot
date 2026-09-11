@@ -10,14 +10,15 @@ class GatewayTests(unittest.TestCase):
         self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
         self.db=Path(self.tmp.name)/'state.sqlite3';self.s=Store(self.db);self.t=1788998400000;self.s.init(self.t)
         self.g=RiskGateway(self.s);self.m={k:dict(symbol=k,price=100.0,ts_ms=self.t,source='fixture') for k in SYMBOLS}
-    def p(self,id='one',action='BUY',n=100):
+    def p(self,id='one',action='BUY',n=None):
+        n=POLICY['initial_cash']*0.01 if n is None else n  # 1% of nav: well inside every cap regardless of initial_cash
         return dict(id=id,created_ms=self.t,expected_revision=self.s.read()['revision'],agent='fixture',action=action,symbol='BTC-USDT',notional=n,reason='test')
     def runp(self,p=None):return self.g.run(p or self.p(),self.m,self.t)
     def test_buy_restart_sell_fees(self):
-        r=self.runp();self.assertEqual(r['status'],'filled');self.assertLess(r['equity'],10000)
+        r=self.runp();self.assertEqual(r['status'],'filled');self.assertLess(r['equity'],POLICY['initial_cash'])
         self.g=RiskGateway(Store(self.db));q=self.s.read()['positions']['BTC-USDT']['qty']
         self.runp(self.p('sell','SELL',q*100));self.assertFalse(self.s.read()['positions'])
-        self.assertLess(self.s.read()['cash'],10000)
+        self.assertLess(self.s.read()['cash'],POLICY['initial_cash'])
     def test_retry_and_conflict(self):
         p=self.p();r=self.runp(p);self.assertEqual(r,self.g.run(p,{},self.t+999999))
         p['notional']=90
@@ -47,7 +48,7 @@ class GatewayTests(unittest.TestCase):
         p=self.p();p['created_ms']-=60001
         with self.assertRaises(ValueError):self.runp(p)
     def test_size_and_no_pyramiding(self):
-        self.assertEqual(self.runp(self.p(n=2000))['reason'],'order_cap')
+        self.assertEqual(self.runp(self.p(n=POLICY['initial_cash']*.5))['reason'],'order_cap')
         self.runp(self.p('small'));self.assertEqual(self.runp(self.p('add'))['reason'],'pyramiding_disabled')
     def test_oversell(self):self.assertEqual(self.runp(self.p(action='SELL'))['reason'],'no_position')
     def test_halt_exits_and_blocks(self):
@@ -60,11 +61,11 @@ class GatewayTests(unittest.TestCase):
     def test_daily_loss_and_drawdown(self):
         # Simulate a preexisting mark-to-market breach without bypassing execution.
         with self.s.transaction() as c:
-            s=json.loads(c.execute('SELECT body FROM state').fetchone()[0]);s['cash']=9700
+            s=json.loads(c.execute('SELECT body FROM state').fetchone()[0]);s['cash']=POLICY['initial_cash']*.97
             c.execute('UPDATE state SET body=?',(encode(s),))
         self.assertEqual(self.runp()['reason'],'daily_loss')
         with self.s.transaction() as c:
-            s=json.loads(c.execute('SELECT body FROM state').fetchone()[0]);s['cash']=8900
+            s=json.loads(c.execute('SELECT body FROM state').fetchone()[0]);s['cash']=POLICY['initial_cash']*.89
             c.execute('UPDATE state SET body=?',(encode(s),))
         self.assertEqual(self.runp(self.p('dd'))['reason'],'halted')
     def test_end_of_experiment(self):

@@ -3,8 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from trading_bot.core import Store, SYMBOLS
-from trading_bot.cycle import run_cycle, run_risk_check
+from trading_bot.core import Store, SYMBOLS, POLICY
+from trading_bot.cycle import run_cycle, run_risk_check, EXPERIMENT_VERSION
 from trading_bot.model import ModelResponse
 
 T = 1788998400000
@@ -67,11 +67,12 @@ class CycleTests(unittest.TestCase):
             self.assertTrue((self.root / rel).exists(), rel)
         dec = json.loads((self.root / 'logs/decisions/slot-1.json').read_text())
         self.assertEqual(dec['proposal']['action'], 'BUY')
-        self.assertEqual(dec['proposal']['notional'], 1000.0)          # 10% order cap, not 40%
-        self.assertEqual(dec['adapter']['chosen']['raw_notional'], 4000.0)
+        # 10% order cap binds, not the 40% Kimi asked for
+        self.assertAlmostEqual(dec['proposal']['notional'], round(POLICY['initial_cash']*POLICY['max_order_fraction'], 2), places=2)
+        self.assertAlmostEqual(dec['adapter']['chosen']['raw_notional'], round(POLICY['initial_cash']*.40, 2), places=2)
         self.assertEqual(dec['agent']['request_id'], 'req-slot-1')
         exp = json.loads((self.root / 'state/experiment.json').read_text())
-        self.assertEqual(exp['experiment_version'], 'v1.0')
+        self.assertEqual(exp['experiment_version'], EXPERIMENT_VERSION)
         self.assertIn('benchmarks', exp)
         self.assertEqual(len(exp['changelog']), 1)
         rows = (self.root / 'trades/trades.csv').read_text().strip().splitlines()

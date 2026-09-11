@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 SYMBOLS = ('BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'BNB-USDT', 'XRP-USDT')
-POLICY = dict(version=1, mode='paper', initial_cash=10000.0, days=30,
+POLICY = dict(version=1, mode='paper', initial_cash=10.0, days=30,
               max_order_fraction=.10, max_position_fraction=.20, max_positions=3,
               daily_loss=.02, max_drawdown=.10, max_age_ms=60000,
               fee_bps=10, slippage_bps=5, stop_fraction=.02,
@@ -72,8 +72,8 @@ class Store:
                 'CREATE TABLE runs (id TEXT PRIMARY KEY, input_hash TEXT NOT NULL, body TEXT NOT NULL);')
             s=dict(schema_version=1, revision=0, mode='paper', policy_hash=digest(POLICY),
                    started_ms=t, ends_ms=t+POLICY['days']*86400000, cash=POLICY['initial_cash'],
-                   positions={}, peak_equity=10000.0, day=day(t), day_equity=10000.0,
-                   last_equity=10000.0, daily_orders=0, halted=False, market={}, last_run_hash=None)
+                   positions={}, peak_equity=POLICY['initial_cash'], day=day(t), day_equity=POLICY['initial_cash'],
+                   last_equity=POLICY['initial_cash'], daily_orders=0, halted=False, market={}, last_run_hash=None)
             c.execute('INSERT INTO state VALUES (1,?)',(encode(s),));c.commit()
         finally:c.close()
         return s

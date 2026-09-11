@@ -1,11 +1,15 @@
 # trading-bot：30 日 AI crypto paper-trading 實驗
 
-**Kimi trades. Python controls risk. GitHub Actions runs the system. Claude Code
+**Kimi trades. Python controls risk. A cron VM runs the system. Claude Code
 maintains it. Cowork reviews it.**
 
-不使用真實資金。第一階段：OKX Demo / paper、GitHub Actions 作 unattended runtime、
-NVIDIA API 上的 Kimi K3 作 trading agent、Python deterministic risk engine 作不可被
-LLM 覆寫的風控層。MacBook 不需要 24/7 開機。
+不使用真實資金。第一階段：OKX Demo / paper、常開 VM（AWS EC2，`crontab`）作 unattended
+runtime、NVIDIA API 上的 Kimi K3 作 trading agent、Python deterministic risk engine
+作不可被 LLM 覆寫的風控層。MacBook 不需要 24/7 開機。
+
+> **狀態（2026-09-11）**：v1.1 已上線。起始本金 **10 USDT**，runtime 已從 GitHub
+> Actions（`schedule:` 實測會延遲/丟 tick）遷移到 AWS EC2 常開 VM 的 `crontab`；
+> GitHub Actions 兩個 workflow 保留檔案但已 disable，當手動 fallback。
 
 架構全貌見 `docs/architecture.md`；風控數值見 `docs/risk-policy.md`；實驗完整性規則見
 `CHANGELOG.md`。
@@ -14,9 +18,8 @@ LLM 覆寫的風控層。MacBook 不需要 24/7 開機。
 
 | 元件 | 角色 |
 |---|---|
-| `.github/workflows/trading-cycle.yml` | 主 runtime，每 4h UTC + 手動 dispatch，一次一個 cycle（Kimi 決策），結束 commit state/logs/trades |
-| `.github/workflows/risk-monitor.yml` | 每小時 deterministic 安全網：無模型，抓行情 → RiskGateway HOLD（執行停損／回撤／日虧損退出）→ commit。`risk-` run_id 前綴，`logs/risk/`。停損延遲 ≤1h |
-| `scripts/run_on_vm.sh` + `scripts/crontab.example` + `docs/vm-runtime-setup.md` | 排程 runtime 替代方案：GitHub `schedule:` 會延遲/丟 tick 時，改用常開 VM（AWS EC2 t3.micro 為主，Lightsail/GCP/Azure/Hetzner/外部 cron 為備）+ 系統 cron 跑同一份程式（VM 成為帳本唯一寫入者，GitHub workflow disable 留作手動 fallback）|
+| `scripts/run_on_vm.sh` + `crontab.example` | **主 runtime**：AWS EC2 常開 VM，`0 */4 * * *` 跑 Kimi cycle、`0 * * * *` 跑純程式 risk-check，fetch → 執行 → commit → push。見 `docs/vm-runtime-setup.md` |
+| `.github/workflows/trading-cycle.yml` / `risk-monitor.yml` | 已 disable，程式邏輯與 VM 相同，只能手動 `gh workflow run` 當 fallback |
 | `trading_bot/model/`（`NvidiaKimiClient`）| Kimi K3 → `schemas/agent-output.schema.json`（market_regime / portfolio_view / ranked candidates）。可替換介面，換 NVIDIA 其他模型不動交易邏輯。缺 `NVIDIA_API_KEY` 明確 fail |
 | `trading_bot/core.py`（`RiskGateway` / `POLICY`）| 唯一動餘額的程式。固定風控、版本檢查、idempotency、atomic SQLite、hash chain。**未變動** |
 | `trading_bot/cycle.py` | 13 步 cycle；把 candidates 轉內部 proposal，**notional 由 Python 算**（RESIZE 點），每次 resize/reject 落 `logs/decisions/` |
@@ -51,19 +54,23 @@ python3 -m trading_bot --db state/experiment.sqlite3 export
 相同 `--run-id` 重跑是 idempotent：重放已存的 proposal 與 market，不再呼叫 Kimi、不重複成交。
 `init` 只能一次，既有檔案拒絕覆寫，帳本不存在即停止（不自動重置）。測試帳本請用別的路徑。
 
-## 上線前尚缺（GitHub Actions）
+## 現況（v1.1，2026-09-11）
 
-1. `python3 -m trading_bot --db state/experiment.sqlite3 init` 並把 `state/experiment.sqlite3` commit。
-2. 設 GitHub Secret `NVIDIA_API_KEY`；repo variable `TRADING_MODEL`（先 `none`，穩定後改 `nvidia`）。
-3. 先讓 workflow 跑 1–2 天 `none` 模式，確認每 4h 排程、commit 迴圈、無遞迴觸發。
-4.（可選）branch protection，避免非 workflow 的 commit 改動 `trading_bot/core.py` / POLICY。
-5. OKX Demo 憑證僅在要做 Demo 帳戶讀取 / 未來真下單時才需要；第一階段非必要。
+- Runtime：AWS EC2 t3.micro，`crontab` 跑 `scripts/run_on_vm.sh`（見 `docs/vm-runtime-setup.md`）。
+- Kimi K3 已啟用（`NVIDIA_API_KEY` 在 VM 的 `~/trading-bot.env`；GitHub Actions 手動
+  fallback 用的那把放在 repo secret）。
+- GitHub Actions 兩個 workflow 檔案還在，但已 `disabled_manually`，只能手動 `gh workflow run`。
+- （可選）branch protection，避免非 VM 的 commit 改動 `trading_bot/core.py` / POLICY。
+- OKX Demo 憑證僅在要做 Demo 帳戶讀取 / 未來真下單時才需要；目前非必要。
 
 ## 歷史
 
-舊架構（Cowork cloud 作 orchestrator）因跨 session 狀態寫入每次需人工即時核准、無法
-無人值守而retired，詳見 `evidence/cloud-validation.json`、`docs/validation.md`。
-GitHub Actions 取代該路徑。
+架構經過兩次遷移：
+1. **Cowork cloud 作 orchestrator**（retired）—— 跨 session 狀態寫入每次需人工即時核准，
+   無法無人值守，詳見 `evidence/cloud-validation.json`、`docs/validation.md`。
+2. **GitHub Actions `schedule:`**（retired 為手動 fallback）—— 排程 tick 實測會延遲數十
+   分鐘、甚至整批被丟（某夜 risk-monitor 9 個 hourly tick 只跑 3 個），改用常開 VM 的
+   系統 `crontab`，詳見 `docs/vm-runtime-setup.md`。
 
 ## GitHub 交接
 
