@@ -5,13 +5,20 @@ __pycache__/
 .env.*
 !.env.example
 
-# Local scratch SQLite ledgers stay local. The committed 30-day experiment
-# ledger (state/experiment.sqlite3) is whitelisted so each stateless GitHub
-# Actions run can load prior state; its JSON projections in state/ are tracked
-# normally, as are logs/ and trades/.
+# Local scratch SQLite ledgers stay local. The three profile ledgers are
+# whitelisted so each stateless run can load prior state; their JSON
+# projections in state/<profile>/ are tracked normally, as are logs/ and
+# trades/. (state/experiment.sqlite3 was the pre-multi-profile ledger, now
+# renamed to state/baseline.sqlite3 -- git mv preserved its tracked status.)
 *.sqlite3
 *.sqlite3-*
-!state/experiment.sqlite3
+!state/baseline.sqlite3
+!state/aggressive.sqlite3
+!state/conservative.sqlite3
+
+# Weekly roundtable briefing is VM-local, ephemeral, and refreshed outside
+# any cycle -- it should never enter the ledger's git history.
+state/roundtable_briefing.json
 
 # Private runtime evidence and host inventory remain local.
 evidence/*
