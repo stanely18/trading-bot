@@ -47,13 +47,35 @@ def _floor2(x):
     return math.floor(x * 100) / 100
 
 
-def build_context(portfolio, market, ind, nav, policy=None):
+ADVISORY_CONTEXT_MAX_AGE_MS = 8 * 86400000  # a stale weekly briefing must not
+# linger silently for months if the roundtable task ever stops firing.
+
+
+def _load_advisory_context(path, now_ms_fn=now_ms):
+    """Read the weekly multi-model roundtable briefing if present and fresh.
+
+    Pure background reference for the model -- never bypasses RiskGateway,
+    never itself proposes a trade. Missing/stale/malformed -> None (cycle
+    proceeds exactly as if no roundtable had ever run)."""
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text())
+        generated_ms = data.get('generated_at_ms')
+        if not isinstance(generated_ms, int) or now_ms_fn() - generated_ms > ADVISORY_CONTEXT_MAX_AGE_MS:
+            return None
+        return data
+    except Exception:
+        return None
+
+
+def build_context(portfolio, market, ind, nav, policy=None, advisory_context=None):
     policy = DEFAULT_POLICY if policy is None else policy
     caps = {k: policy[k] for k in ('max_order_fraction', 'max_position_fraction', 'max_positions',
                                    'daily_loss', 'max_drawdown', 'stop_fraction',
                                    'max_planned_loss_fraction', 'max_daily_orders',
                                    'fee_bps', 'slippage_bps')}
-    return {
+    ctx = {
         'experiment_version': EXPERIMENT_VERSION,
         'mode': 'paper',
         'universe': list(SYMBOLS),
@@ -70,6 +92,9 @@ def build_context(portfolio, market, ind, nav, policy=None):
         'indicators': ind,
         'regime_hint': indicators.regime_hint(ind),
     }
+    if advisory_context is not None:
+        ctx['advisory_context'] = advisory_context
+    return ctx
 
 
 def size_and_select(agent_output, portfolio, market, run_id, created_ms, revision, policy=None):
@@ -255,7 +280,10 @@ def run_cycle(db, run_id, *, model_client=None, root='.', deadline_ms=40000,
         health['steps']['indicators'] = 'ok' if any('error' not in v for v in ind.values()) else 'degraded'
 
         nav_before = equity(portfolio_before, market)
-        context = build_context(portfolio_before, market, ind, nav_before, policy)  # step 5
+        # Shared across all profiles (root-level, not state_dir): one weekly
+        # roundtable briefing informs every profile's cycle equally.
+        advisory_context = _load_advisory_context(root / 'state' / 'roundtable_briefing.json', now_ms_fn)
+        context = build_context(portfolio_before, market, ind, nav_before, policy, advisory_context)  # step 5
 
         agent_output = None
         agent_record = {'status': 'hold_default'}

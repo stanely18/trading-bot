@@ -26,9 +26,11 @@ class FakeModel:
     def __init__(self, output):
         self.output = output
         self.calls = 0
+        self.last_req = None
 
     def evaluate(self, req):
         self.calls += 1
+        self.last_req = req
         return ModelResponse(request_id='req-' + req['request_id'], provider='fake', model='fake-1',
                              snapshot_hash=req['snapshot_hash'], output=self.output,
                              usage={'total_tokens': 1}, latency_ms=5)
@@ -100,6 +102,27 @@ class CycleTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             run_cycle(str(self.root / 'nope.sqlite3'), 'x', model_client=None, root=str(self.root),
                       now_ms_fn=lambda: T, market_fn=mk_market, candles_fn=mk_candles)
+
+    def test_no_roundtable_briefing_omits_advisory_context(self):
+        model = FakeModel(ALL_HOLD)
+        self.run_it(model)
+        self.assertNotIn('advisory_context', model.last_req['context'])
+
+    def test_fresh_roundtable_briefing_included_as_advisory_context(self):
+        briefing = {'generated_at_ms': T - 3600000, 'summary': 'roundtable took a neutral view this week'}
+        (self.root / 'state').mkdir(parents=True, exist_ok=True)
+        (self.root / 'state' / 'roundtable_briefing.json').write_text(json.dumps(briefing))
+        model = FakeModel(ALL_HOLD)
+        self.run_it(model)
+        self.assertEqual(model.last_req['context']['advisory_context'], briefing)
+
+    def test_stale_roundtable_briefing_omitted(self):
+        stale = {'generated_at_ms': T - 9 * 86400000, 'summary': 'too old'}
+        (self.root / 'state').mkdir(parents=True, exist_ok=True)
+        (self.root / 'state' / 'roundtable_briefing.json').write_text(json.dumps(stale))
+        model = FakeModel(ALL_HOLD)
+        self.run_it(model)
+        self.assertNotIn('advisory_context', model.last_req['context'])
 
 
 class RiskCheckTests(unittest.TestCase):
