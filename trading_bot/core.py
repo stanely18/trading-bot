@@ -9,11 +9,41 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 SYMBOLS = ('BTC-USDT', 'ETH-USDT', 'SOL-USDT', 'BNB-USDT', 'XRP-USDT')
-POLICY = dict(version=1, mode='paper', initial_cash=10.0, days=30,
+DEFAULT_POLICY = dict(version=1, mode='paper', initial_cash=10.0, days=30,
               max_order_fraction=.10, max_position_fraction=.20, max_positions=3,
               daily_loss=.02, max_drawdown=.10, max_age_ms=60000,
               fee_bps=10, slippage_bps=5, stop_fraction=.02,
               max_planned_loss_fraction=.005, max_daily_orders=24)
+# Backward-compatible alias: `from trading_bot.core import POLICY` keeps working
+# and continues to mean "the baseline default policy".
+POLICY = DEFAULT_POLICY
+
+_POLICIES_DIR = Path(__file__).resolve().parent.parent / 'config' / 'policies'
+# config/policies/conservative.json halves DEFAULT_POLICY's max_order_fraction,
+# max_position_fraction, daily_loss, max_drawdown and max_planned_loss_fraction
+# (.10/.20/.02/.10/.005 -> .05/.10/.01/.05/.0025); no leverage key.
+
+def load_policy(profile: str) -> dict:
+    """Shallow-merge config/policies/<profile>.json over DEFAULT_POLICY.
+
+    Safe by construction: a missing/unreadable/malformed profile file falls
+    back to `dict(DEFAULT_POLICY)` unchanged rather than raising, so a typo'd
+    or not-yet-created profile never crashes the CLI or a cycle run."""
+    merged = dict(DEFAULT_POLICY)
+    try:
+        overrides = json.loads((_POLICIES_DIR / f'{profile}.json').read_text())
+    except Exception:
+        return merged
+    merged.update(overrides)
+    return merged
+
+def liquidation_price(entry_price, leverage, maintenance_margin_rate, side='long'):
+    """Isolated-margin liquidation price. `side` is 'long' or 'short'; this bot
+    only ever opens long positions today, but the formula is kept symmetric
+    and independently testable for both sides."""
+    if side == 'long':
+        return entry_price * (1 - 1/leverage + maintenance_margin_rate)
+    return entry_price * (1 + 1/leverage - maintenance_margin_rate)
 
 def now_ms(): return int(time.time()*1000)
 def encode(x): return json.dumps(x, sort_keys=True, separators=(',', ':'), allow_nan=False)
@@ -27,7 +57,7 @@ def number(x, positive=False):
 
 def proposal_valid(p):
     keys={'id','created_ms','expected_revision','agent','action','symbol','notional','reason'}
-    if not isinstance(p,dict) or set(p)!=keys: raise ValueError('proposal fields mismatch')
+    if not isinstance(p,dict) or set(p) not in (keys, keys|{'leverage'}): raise ValueError('proposal fields mismatch')
     for k in ('id','agent','reason'):
         if not isinstance(p[k],str) or not 1 <= len(p[k]) <= 2000: raise ValueError(k)
     for k in ('created_ms','expected_revision'):
@@ -36,6 +66,7 @@ def proposal_valid(p):
     number(p['notional'])
     if p['action']=='HOLD' and p['notional']!=0: raise ValueError('HOLD notional')
     if p['action']!='HOLD' and p['notional']<=0: raise ValueError('notional')
+    if 'leverage' in p and (type(p['leverage']) is not int or p['leverage']<1): raise ValueError('leverage')
 
 def market_valid(m, t):
     if set(m)!=set(SYMBOLS): raise ValueError('incomplete market')
@@ -61,7 +92,8 @@ class Store:
         except BaseException:
             c.rollback(); raise
         finally: c.close()
-    def init(self,t=None):
+    def init(self,t=None,policy=None):
+        policy=DEFAULT_POLICY if policy is None else policy
         t=now_ms() if t is None else t
         self.path.parent.mkdir(parents=True,exist_ok=True)
         # Exclusive creation prevents an accidental portfolio reset.
@@ -70,10 +102,10 @@ class Store:
         try:
             c.executescript('CREATE TABLE state (id INTEGER PRIMARY KEY CHECK(id=1), body TEXT NOT NULL);'
                 'CREATE TABLE runs (id TEXT PRIMARY KEY, input_hash TEXT NOT NULL, body TEXT NOT NULL);')
-            s=dict(schema_version=1, revision=0, mode='paper', policy_hash=digest(POLICY),
-                   started_ms=t, ends_ms=t+POLICY['days']*86400000, cash=POLICY['initial_cash'],
-                   positions={}, peak_equity=POLICY['initial_cash'], day=day(t), day_equity=POLICY['initial_cash'],
-                   last_equity=POLICY['initial_cash'], daily_orders=0, halted=False, market={}, last_run_hash=None)
+            s=dict(schema_version=1, revision=0, mode='paper', policy_hash=digest(policy),
+                   started_ms=t, ends_ms=t+policy['days']*86400000, cash=policy['initial_cash'],
+                   positions={}, peak_equity=policy['initial_cash'], day=day(t), day_equity=policy['initial_cash'],
+                   last_equity=policy['initial_cash'], daily_orders=0, halted=False, market={}, last_run_hash=None)
             c.execute('INSERT INTO state VALUES (1,?)',(encode(s),));c.commit()
         finally:c.close()
         return s
@@ -90,7 +122,7 @@ class Store:
 
 class RiskGateway:
     """Only this class changes trading balances. Fixed policy, no model override fields."""
-    def __init__(self,store): self.store=store
+    def __init__(self,store,policy=DEFAULT_POLICY): self.store=store; self.policy=policy
     def run(self,p,market,t=None):
         proposal_valid(p)
         t=now_ms() if t is None else t
@@ -100,9 +132,9 @@ class RiskGateway:
                 if old[0]!=digest(p): raise ValueError('idempotency conflict')
                 return json.loads(old[1])
             s=json.loads(c.execute('SELECT body FROM state WHERE id=1').fetchone()[0])
-            if s['policy_hash']!=digest(POLICY) or s['mode']!='paper': raise ValueError('policy/mode changed')
+            if s['policy_hash']!=digest(self.policy) or s['mode']!='paper': raise ValueError('policy/mode changed')
             if p['expected_revision']!=s['revision']: raise ValueError('revision conflict; re-read state')
-            if not 0<=t-p['created_ms']<=POLICY['max_age_ms']: raise ValueError('expired/future proposal')
+            if not 0<=t-p['created_ms']<=self.policy['max_age_ms']: raise ValueError('expired/future proposal')
             market_valid(market,t)
             if t < s['started_ms']: raise ValueError('clock before experiment')
             s['market']=copy.deepcopy(market)
@@ -111,34 +143,59 @@ class RiskGateway:
                 # First observed mark of new UTC day; overnight gap belongs to new day.
                 s['day']=day(t);s['day_equity']=s['last_equity'];s['daily_orders']=0
             s['peak_equity']=max(s['peak_equity'],nav)
-            daily_breach=nav<=s['day_equity']*(1-POLICY['daily_loss'])
-            if nav<=s['peak_equity']*(1-POLICY['max_drawdown']): s['halted']=True
+            daily_breach=nav<=s['day_equity']*(1-self.policy['daily_loss'])
+            if nav<=s['peak_equity']*(1-self.policy['max_drawdown']): s['halted']=True
             fills=[]
             expired=t>=s['ends_ms']
             # Stops and exits remain allowed during kill/daily-loss/end-of-experiment.
+            # A crossed liquidation_price (leveraged positions only) is checked
+            # independently of, and ahead of, the ordinary stop-loss/halt exits
+            # below, and is tagged with a distinct reason so it's distinguishable
+            # in logs/state from a normal stop-loss exit.
             for sym in list(s['positions']):
                 pos=s['positions'][sym]
-                if s['halted'] or daily_breach or expired or market[sym]['price']<=pos['stop_price']:
+                liq=pos.get('liquidation_price')
+                if liq is not None and market[sym]['price']<=liq:
+                    self._sell(s,sym,pos['qty'],market,fills,'liquidated')
+                elif s['halted'] or daily_breach or expired or market[sym]['price']<=pos['stop_price']:
                     self._sell(s,sym,pos['qty'],market,fills,'risk_exit')
             nav=equity(s,market)
             action=p['action'];sym=p['symbol'];n=p['notional'];reason='hold';status='held'
             if action=='BUY':
-                pos=s['positions'].get(sym);price=market[sym]['price']*(1+POLICY['slippage_bps']/10000)
-                cost=n*(1+POLICY['fee_bps']/10000)
-                planned_loss=n*(POLICY['stop_fraction']+2*(POLICY['fee_bps']+POLICY['slippage_bps'])/10000)
+                pos=s['positions'].get(sym);price=market[sym]['price']*(1+self.policy['slippage_bps']/10000)
+                leverage=self.policy.get('leverage',1)
+                # `n` is margin_committed (cash at risk); `notional` is the actual
+                # leveraged exposure (qty*price once filled == n*leverage). Fees
+                # and the planned-loss guard must both be based on `notional` --
+                # real exchanges charge fees and liquidate on notional, not on
+                # unleveraged margin -- so both scale correctly with leverage.
+                # For leverage=1 (baseline/conservative), notional==n: no-op.
+                notional=n*leverage
+                cost=n+notional*self.policy['fee_bps']/10000
+                planned_loss=notional*(self.policy['stop_fraction']+2*(self.policy['fee_bps']+self.policy['slippage_bps'])/10000)
                 checks=[(s['halted'],'halted'),(daily_breach,'daily_loss'),(expired,'experiment_ended'),
-                        (s['daily_orders']>=POLICY['max_daily_orders'],'daily_order_cap'),
-                        (n>nav*POLICY['max_order_fraction'],'order_cap'),
-                        (n+(pos['qty']*market[sym]['price'] if pos else 0)>nav*POLICY['max_position_fraction'],'position_cap'),
-                        (not pos and len(s['positions'])>=POLICY['max_positions'],'positions_cap'),
+                        (s['daily_orders']>=self.policy['max_daily_orders'],'daily_order_cap'),
+                        (p.get('leverage',1)>leverage,'leverage_exceeds_policy'),
+                        (n>nav*self.policy['max_order_fraction'],'order_cap'),
+                        (n+(pos['qty']*market[sym]['price'] if pos else 0)>nav*self.policy['max_position_fraction'],'position_cap'),
+                        (not pos and len(s['positions'])>=self.policy['max_positions'],'positions_cap'),
                         (cost>s['cash'],'insufficient_cash'),
                         (pos is not None,'pyramiding_disabled'),
-                        (planned_loss>nav*POLICY['max_planned_loss_fraction'],'planned_loss_cap')]
+                        (planned_loss>nav*self.policy['max_planned_loss_fraction'],'planned_loss_cap')]
                 reason=next((r for failed,r in checks if failed),'approved')
                 if reason=='approved':
-                    qty=n/price;s['cash']-=cost
-                    s['positions'][sym]=dict(qty=qty,entry_price=price,stop_price=price*(1-POLICY['stop_fraction']))
-                    fills.append(dict(symbol=sym,side='BUY',qty=qty,price=price,fee=n*POLICY['fee_bps']/10000,reason='proposal'))
+                    # margin_committed (`n`) is governed by the exact same
+                    # order/position caps as the leverage=1 case above; only
+                    # the notional exposure (qty, fees, and planned-loss/PnL
+                    # sensitivity) scales with leverage.
+                    qty=(n*leverage)/price;s['cash']-=cost
+                    pos_rec=dict(qty=qty,entry_price=price,stop_price=price*(1-self.policy['stop_fraction']))
+                    if leverage>1:
+                        pos_rec['leverage']=leverage
+                        pos_rec['liquidation_price']=liquidation_price(
+                            price,leverage,self.policy.get('maintenance_margin_rate',0.0),'long')
+                    s['positions'][sym]=pos_rec
+                    fills.append(dict(symbol=sym,side='BUY',qty=qty,price=price,fee=notional*self.policy['fee_bps']/10000,reason='proposal'))
                     s['daily_orders']+=1;status='filled'
                 else: status='rejected'
             elif action=='SELL':
@@ -149,7 +206,7 @@ class RiskGateway:
                     self._sell(s,sym,min(pos['qty'],n/market[sym]['price']),market,fills,'proposal')
                     status='filled';reason='approved'
             s['last_equity']=equity(s,market);s['peak_equity']=max(s['peak_equity'],s['last_equity'])
-            if s['last_equity']<=s['peak_equity']*(1-POLICY['max_drawdown']):s['halted']=True
+            if s['last_equity']<=s['peak_equity']*(1-self.policy['max_drawdown']):s['halted']=True
             prev=s['last_run_hash'];s['revision']+=1
             result=dict(schema_version=1,run_id=p['id'],recorded_ms=t,revision=s['revision'],mode='paper',
                         proposal=p,market=market,status=status,reason=reason,fills=fills,
@@ -159,9 +216,27 @@ class RiskGateway:
             c.execute('INSERT INTO runs VALUES (?,?,?)',(p['id'],digest(p),encode(result)))
             return result
     def _sell(self,s,sym,qty,market,fills,reason):
-        price=market[sym]['price']*(1-POLICY['slippage_bps']/10000);gross=qty*price
-        fee=gross*POLICY['fee_bps']/10000;s['cash']+=gross-fee
-        s['positions'][sym]['qty']-=qty
-        if s['positions'][sym]['qty']<1e-12:del s['positions'][sym]
+        price=market[sym]['price']*(1-self.policy['slippage_bps']/10000)
+        pos=s['positions'][sym];leverage=pos.get('leverage',1)
+        # `qty` on a leveraged position embeds the leverage multiplier (set at
+        # entry as n*leverage/entry_price), so qty*price is the full notional
+        # value, NOT margin+PnL -- crediting that back to cash would manufacture
+        # leverage x free money on every exit. Only `margin_returned+pnl` is
+        # actually owed back; this is a strict generalization of the old
+        # `gross=qty*price` and is algebraically identical to it when
+        # leverage==1 (margin_returned=qty*entry_price, so the sum reduces to
+        # qty*price exactly) -- so baseline/conservative are unaffected.
+        margin_returned=qty*pos['entry_price']/leverage
+        pnl=qty*(price-pos['entry_price'])
+        cash_credit_before_fee=margin_returned+pnl
+        # The trading fee is still charged on the full notional traded
+        # (qty*price), matching real exchange practice; only the cash
+        # *credited* (net of fee) uses the corrected, leverage-aware amount.
+        fee_rate=self.policy['fee_bps']/10000
+        if reason=='liquidated':
+            fee_rate+=self.policy.get('liquidation_fee_rate',0)
+        fee=qty*price*fee_rate;s['cash']+=cash_credit_before_fee-fee
+        pos['qty']-=qty
+        if pos['qty']<1e-12:del s['positions'][sym]
         s['daily_orders']+=1
         fills.append(dict(symbol=sym,side='SELL',qty=qty,price=price,fee=fee,reason=reason))

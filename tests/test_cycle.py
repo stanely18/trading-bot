@@ -3,8 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from trading_bot.core import Store, SYMBOLS, POLICY
-from trading_bot.cycle import run_cycle, run_risk_check, EXPERIMENT_VERSION
+from trading_bot.core import DEFAULT_POLICY, POLICY, Store, SYMBOLS, load_policy
+from trading_bot.cycle import EXPERIMENT_VERSION, run_cycle, run_risk_check, size_and_select
 from trading_bot.model import ModelResponse
 
 T = 1788998400000
@@ -61,9 +61,9 @@ class CycleTests(unittest.TestCase):
         out = self.run_it(FakeModel(BUY_BIG))
         self.assertEqual(out['status'], 'filled')
         self.assertEqual(out['decision'], 'resized')
-        for rel in ('state/portfolio.json', 'state/risk_state.json', 'state/agent_state.json',
-                    'state/experiment.json', 'logs/decisions/slot-1.json',
-                    'logs/workflow/slot-1.json', 'trades/trades.csv'):
+        for rel in ('state/baseline/portfolio.json', 'state/baseline/risk_state.json', 'state/baseline/agent_state.json',
+                    'state/baseline/experiment.json', 'logs/decisions/slot-1.json',
+                    'logs/workflow/slot-1.json', 'trades/baseline.csv'):
             self.assertTrue((self.root / rel).exists(), rel)
         dec = json.loads((self.root / 'logs/decisions/slot-1.json').read_text())
         self.assertEqual(dec['proposal']['action'], 'BUY')
@@ -71,11 +71,11 @@ class CycleTests(unittest.TestCase):
         self.assertAlmostEqual(dec['proposal']['notional'], round(POLICY['initial_cash']*POLICY['max_order_fraction'], 2), places=2)
         self.assertAlmostEqual(dec['adapter']['chosen']['raw_notional'], round(POLICY['initial_cash']*.40, 2), places=2)
         self.assertEqual(dec['agent']['request_id'], 'req-slot-1')
-        exp = json.loads((self.root / 'state/experiment.json').read_text())
+        exp = json.loads((self.root / 'state/baseline/experiment.json').read_text())
         self.assertEqual(exp['experiment_version'], EXPERIMENT_VERSION)
         self.assertIn('benchmarks', exp)
         self.assertEqual(len(exp['changelog']), 1)
-        rows = (self.root / 'trades/trades.csv').read_text().strip().splitlines()
+        rows = (self.root / 'trades/baseline.csv').read_text().strip().splitlines()
         self.assertEqual(rows[0].split(',')[0], 'run_id')
         self.assertEqual(rows[1].split(',')[3], 'BUY')
 
@@ -90,7 +90,7 @@ class CycleTests(unittest.TestCase):
         out = self.run_it(FakeModel(ALL_HOLD))
         self.assertEqual(out['status'], 'held')
         self.assertEqual(out['decision'], 'hold')
-        self.assertFalse((self.root / 'trades/trades.csv').exists())
+        self.assertFalse((self.root / 'trades/baseline.csv').exists())
 
     def test_no_model_holds(self):
         out = self.run_it(None)
@@ -117,10 +117,10 @@ class RiskCheckTests(unittest.TestCase):
         self.assertEqual(out['status'], 'held')
         self.assertEqual(out['risk_exits'], [])
         self.assertTrue((self.root / 'logs/risk/risk-2026-09-09T21Z.json').exists())
-        self.assertTrue((self.root / 'state/portfolio.json').exists())
+        self.assertTrue((self.root / 'state/baseline/portfolio.json').exists())
         self.assertFalse((self.root / 'logs/decisions/risk-2026-09-09T21Z.json').exists())
-        self.assertFalse((self.root / 'trades/trades.csv').exists())
-        self.assertFalse((self.root / 'state/agent_state.json').exists())  # untouched by risk check
+        self.assertFalse((self.root / 'trades/baseline.csv').exists())
+        self.assertFalse((self.root / 'state/baseline/agent_state.json').exists())  # untouched by risk check
 
     def test_executes_stop_loss_between_trading_cycles(self):
         # trading cycle buys ETH, then price falls below the 2% stop; the hourly
@@ -135,7 +135,7 @@ class RiskCheckTests(unittest.TestCase):
         self.assertTrue(out['risk_exits'])
         self.assertEqual(out['risk_exits'][0]['side'], 'SELL')
         self.assertNotIn('ETH-USDT', Store(self.db).read()['positions'])
-        rows = (self.root / 'trades/trades.csv').read_text().strip().splitlines()
+        rows = (self.root / 'trades/baseline.csv').read_text().strip().splitlines()
         self.assertEqual(rows[-1].split(',')[0], 'risk-x')
 
     def test_idempotent_replay(self):
@@ -146,6 +146,31 @@ class RiskCheckTests(unittest.TestCase):
                        now_ms_fn=lambda: T, market_fn=mk_market)
         self.assertEqual(Store(self.db).read()['revision'], rev)
         self.assertEqual(len(Store(self.db).records()), 1)
+
+
+class SizeAndSelectPolicyTests(unittest.TestCase):
+    """size_and_select's policy threading and leverage field, in isolation."""
+    def setUp(self):
+        self.market = mk_market()
+        self.portfolio = {'cash': DEFAULT_POLICY['initial_cash'], 'positions': {}}
+
+    def test_omitted_policy_matches_explicit_default_policy(self):
+        p_omitted, _ = size_and_select(BUY_BIG, self.portfolio, self.market, 'r1', T, 0)
+        p_explicit, _ = size_and_select(BUY_BIG, self.portfolio, self.market, 'r1', T, 0, DEFAULT_POLICY)
+        self.assertEqual(p_omitted, p_explicit)
+
+    def test_aggressive_margin_matches_baseline_but_carries_leverage_field(self):
+        base_p, _ = size_and_select(BUY_BIG, self.portfolio, self.market, 'r2', T, 0, DEFAULT_POLICY)
+        agg_p, _ = size_and_select(BUY_BIG, self.portfolio, self.market, 'r3', T, 0, load_policy('aggressive'))
+        self.assertEqual(base_p['notional'], agg_p['notional'])  # margin sizing is leverage-agnostic
+        self.assertNotIn('leverage', base_p)
+        self.assertEqual(agg_p['leverage'], 5)
+
+    def test_conservative_halves_the_sized_notional(self):
+        base_p, _ = size_and_select(BUY_BIG, self.portfolio, self.market, 'r4', T, 0, DEFAULT_POLICY)
+        cons_p, _ = size_and_select(BUY_BIG, self.portfolio, self.market, 'r5', T, 0, load_policy('conservative'))
+        self.assertAlmostEqual(cons_p['notional'], base_p['notional'] / 2)
+        self.assertNotIn('leverage', cons_p)
 
 
 if __name__ == '__main__':

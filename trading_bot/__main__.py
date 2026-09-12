@@ -3,7 +3,7 @@ import json
 import os
 import sys
 import uuid
-from .core import Store,RiskGateway,now_ms,encode
+from .core import Store,RiskGateway,load_policy,now_ms,encode
 from .market import fetch,demo_balance_probe
 
 def _model_client(name):
@@ -22,8 +22,10 @@ def main():
     p.add_argument('--run-id',help='stable scheduled slot id; do not generate a new id on retry')
     p.add_argument('--root',default='.',help='repo root for cycle state/logs/trades projections')
     p.add_argument('--model',help='cycle trading agent: none (default) or nvidia')
-    a=p.parse_args();store=Store(a.db)
-    if a.command=='init':out=store.init()
+    p.add_argument('--profile',choices=['baseline','aggressive','conservative'],default='baseline',
+                   help='risk policy profile: config/policies/<profile>.json merged over DEFAULT_POLICY')
+    a=p.parse_args();store=Store(a.db);policy=load_policy(a.profile)
+    if a.command=='init':out=store.init(policy=policy)
     elif a.command=='state':out=store.read()
     elif a.command=='market':out=fetch()
     elif a.command=='export':out={'portfolio':store.read(),'runs':store.records()}
@@ -32,11 +34,11 @@ def main():
     elif a.command=='cycle':
         from .cycle import run_cycle
         if not a.run_id: raise SystemExit('cycle requires --run-id (stable slot id, reused on retry)')
-        out=run_cycle(a.db,a.run_id,model_client=_model_client(a.model),root=a.root)
+        out=run_cycle(a.db,a.run_id,model_client=_model_client(a.model),root=a.root,policy=policy,profile=a.profile)
     elif a.command=='risk-check':
         from .cycle import run_risk_check
         if not a.run_id: raise SystemExit('risk-check requires --run-id (use a risk-* prefix, distinct from trading slots)')
-        out=run_risk_check(a.db,a.run_id,root=a.root)
+        out=run_risk_check(a.db,a.run_id,root=a.root,policy=policy,profile=a.profile)
     else:
         if a.proposal:
             with open(a.proposal) as f: proposal=json.load(f)
@@ -49,7 +51,7 @@ def main():
         # A committed retry needs no fresh market network request.
         previous=next((r for r in store.records() if r['run_id']==proposal['id']),None)
         market=previous['market'] if previous else fetch()
-        out=RiskGateway(store).run(proposal,market)
+        out=RiskGateway(store,policy=policy).run(proposal,market)
     print(json.dumps(out,ensure_ascii=False,indent=2,allow_nan=False))
     if isinstance(out,dict) and out.get('status')=='blocked':return 2
     # Cycle committed a safe HOLD + full logs, but surface a requested-model

@@ -4,16 +4,25 @@
 # Requires: git, python3 (>=3.11), flock (util-linux — preinstalled on Ubuntu).
 # Adjust the path if you cloned somewhere other than ~/trading-bot.
 #
-# Install:  crontab -e   → paste the two lines below (and the two env lines).
+# Install:  crontab -e   → paste the lines below (and the env lines).
+#
+# Three profiles (baseline / aggressive / conservative) share ONE global
+# flock inside run_on_vm.sh (see its header comment) since all three commit
+# to the same git repo/branch — staggering by a few minutes here just keeps
+# their logs/commits readable in order; it is not what makes them safe.
 
 SHELL=/bin/bash
 MAILTO=""
 
-# 4-hour Kimi trading cycle (00:00 / 04:00 / 08:00 / 12:00 / 16:00 / 20:00 UTC)
-0 */4 * * * $HOME/trading-bot/scripts/run_on_vm.sh cycle      >> $HOME/trading-bot-cron.log 2>&1
+# 4-hour Kimi trading cycle (00:00 / 04:00 / 08:00 / 12:00 / 16:00 / 20:00 UTC), staggered 5 min apart
+0 */4 * * *    $HOME/trading-bot/scripts/run_on_vm.sh baseline     cycle      >> $HOME/trading-bot-baseline-cron.log 2>&1
+5 */4 * * *    $HOME/trading-bot/scripts/run_on_vm.sh aggressive   cycle      >> $HOME/trading-bot-aggressive-cron.log 2>&1
+10 */4 * * *   $HOME/trading-bot/scripts/run_on_vm.sh conservative cycle      >> $HOME/trading-bot-conservative-cron.log 2>&1
 
-# hourly deterministic risk check (stop-loss / drawdown / daily-loss exits)
-0 * * * *   $HOME/trading-bot/scripts/run_on_vm.sh risk-check >> $HOME/trading-bot-cron.log 2>&1
+# hourly deterministic risk check (stop-loss / drawdown / daily-loss / liquidation exits), staggered 5 min apart
+0 * * * *      $HOME/trading-bot/scripts/run_on_vm.sh baseline     risk-check >> $HOME/trading-bot-baseline-cron.log 2>&1
+5 * * * *      $HOME/trading-bot/scripts/run_on_vm.sh aggressive   risk-check >> $HOME/trading-bot-aggressive-cron.log 2>&1
+10 * * * *     $HOME/trading-bot/scripts/run_on_vm.sh conservative risk-check >> $HOME/trading-bot-conservative-cron.log 2>&1
 
-# Optional: rotate the log weekly so it does not grow unbounded
-0 0 * * 0   tail -n 5000 $HOME/trading-bot-cron.log > $HOME/trading-bot-cron.log.tmp && mv $HOME/trading-bot-cron.log.tmp $HOME/trading-bot-cron.log
+# Optional: rotate each profile's log weekly so none grows unbounded
+0 0 * * 0      for p in baseline aggressive conservative; do f="$HOME/trading-bot-$p-cron.log"; tail -n 5000 "$f" > "$f.tmp" && mv "$f.tmp" "$f"; done

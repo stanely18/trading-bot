@@ -22,7 +22,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .core import POLICY, RiskGateway, SYMBOLS, Store, equity, now_ms
+from .core import DEFAULT_POLICY, RiskGateway, SYMBOLS, Store, equity, now_ms
 from .market import fetch, fetch_candles
 from . import benchmarks, indicators
 from .model import ModelError
@@ -47,8 +47,9 @@ def _floor2(x):
     return math.floor(x * 100) / 100
 
 
-def build_context(portfolio, market, ind, nav):
-    caps = {k: POLICY[k] for k in ('max_order_fraction', 'max_position_fraction', 'max_positions',
+def build_context(portfolio, market, ind, nav, policy=None):
+    policy = DEFAULT_POLICY if policy is None else policy
+    caps = {k: policy[k] for k in ('max_order_fraction', 'max_position_fraction', 'max_positions',
                                    'daily_loss', 'max_drawdown', 'stop_fraction',
                                    'max_planned_loss_fraction', 'max_daily_orders',
                                    'fee_bps', 'slippage_bps')}
@@ -71,12 +72,21 @@ def build_context(portfolio, market, ind, nav):
     }
 
 
-def size_and_select(agent_output, portfolio, market, run_id, created_ms, revision):
+def size_and_select(agent_output, portfolio, market, run_id, created_ms, revision, policy=None):
     """Pick at most one actionable candidate and size it in Python.
 
     Returns (proposal, meta). `meta.decision` is one of: hold, sized, resized,
     skipped_*. The model's target_allocation is advisory; the returned notional
-    is clamped to order / position / planned-loss caps."""
+    is clamped to order / position / planned-loss caps.
+
+    `notional` always means margin_committed (the cash the caps above are
+    computed against and that RiskGateway will deduct) -- identical formula to
+    the leverage=1 case. When `policy['leverage'] > 1`, RiskGateway scales the
+    resulting position's notional exposure (qty) by that leverage on top of
+    this unchanged margin sizing; the `leverage` field on the proposal below
+    just mirrors the profile's own cap back at RiskGateway's defense-in-depth
+    `leverage_exceeds_policy` guard."""
+    policy = DEFAULT_POLICY if policy is None else policy
     nav = equity(portfolio, market)
     base = dict(id=run_id, created_ms=created_ms, expected_revision=revision,
                 agent='kimi-k3', symbol='BTC-USDT')
@@ -86,7 +96,8 @@ def size_and_select(agent_output, portfolio, market, run_id, created_ms, revisio
     if not agent_output:
         return hold, meta
 
-    plr = POLICY['stop_fraction'] + 2 * (POLICY['fee_bps'] + POLICY['slippage_bps']) / 10000
+    leverage = policy.get('leverage', 1)
+    plr = policy['stop_fraction'] + 2 * (policy['fee_bps'] + policy['slippage_bps']) / 10000
     cands = sorted(agent_output['candidates'],
                    key=lambda c: (-c['confidence'], c['symbol']))
     for c in cands:
@@ -105,9 +116,9 @@ def size_and_select(agent_output, portfolio, market, run_id, created_ms, revisio
                 continue
             raw = c['target_allocation'] * nav
             capped = min(raw,
-                         POLICY['max_order_fraction'] * nav,
-                         POLICY['max_position_fraction'] * nav,
-                         nav * POLICY['max_planned_loss_fraction'] / plr)
+                         policy['max_order_fraction'] * nav,
+                         policy['max_position_fraction'] * nav,
+                         nav * policy['max_planned_loss_fraction'] / plr)
             n = _floor2(capped)
             if n <= 0:
                 rec['result'] = 'skipped_zero_size'
@@ -115,6 +126,8 @@ def size_and_select(agent_output, portfolio, market, run_id, created_ms, revisio
                 continue
             reason = (c.get('thesis') or 'model buy')[:2000]
             proposal = {**base, 'symbol': sym, 'action': 'BUY', 'notional': n, 'reason': reason}
+            if leverage > 1:
+                proposal['leverage'] = leverage
             meta['decision'] = 'resized' if n < raw - 1e-9 else 'sized'
             rec['result'] = meta['decision']
             rec['raw_notional'] = round(raw, 2)
@@ -153,11 +166,12 @@ def size_and_select(agent_output, portfolio, market, run_id, created_ms, revisio
     return hold, meta
 
 
-def _pnl(portfolio, market):
+def _pnl(portfolio, market, policy=None):
+    policy = DEFAULT_POLICY if policy is None else policy
     nav = equity(portfolio, market)
     unrealized = sum(p['qty'] * (market[s]['price'] - p['entry_price'])
                      for s, p in portfolio['positions'].items())
-    total = nav - POLICY['initial_cash']
+    total = nav - policy['initial_cash']
     return {'nav': round(nav, 4), 'total_pnl': round(total, 4),
             'unrealized_pnl': round(unrealized, 4), 'realized_pnl': round(total - unrealized, 4)}
 
@@ -192,8 +206,15 @@ def _append_trades(csv_path: Path, run_id, recorded_ms, fills):
 
 def run_cycle(db, run_id, *, model_client=None, root='.', deadline_ms=40000,
               now_ms_fn=now_ms, market_fn=fetch, candles_fn=fetch_candles,
-              candle_bar='1H', candle_limit=120):
+              candle_bar='1H', candle_limit=120, policy=None, profile='baseline'):
+    policy = DEFAULT_POLICY if policy is None else policy
     root = Path(root)
+    # Each profile gets its own state/<profile>/ projection files and
+    # trades/<profile>.csv -- three profiles share one --root (the repo
+    # checkout) and would otherwise clobber each other's portfolio/risk/
+    # agent/experiment JSON and trades ledger on every cycle.
+    state_dir = root / 'state' / profile
+    trades_path = root / 'trades' / f'{profile}.csv'
     started = time.monotonic()
     health = {'run_id': run_id, 'experiment_version': EXPERIMENT_VERSION,
               'started_utc': _utc(now_ms_fn()), 'steps': {}, 'errors': []}
@@ -234,7 +255,7 @@ def run_cycle(db, run_id, *, model_client=None, root='.', deadline_ms=40000,
         health['steps']['indicators'] = 'ok' if any('error' not in v for v in ind.values()) else 'degraded'
 
         nav_before = equity(portfolio_before, market)
-        context = build_context(portfolio_before, market, ind, nav_before)  # step 5
+        context = build_context(portfolio_before, market, ind, nav_before, policy)  # step 5
 
         agent_output = None
         agent_record = {'status': 'hold_default'}
@@ -258,10 +279,10 @@ def run_cycle(db, run_id, *, model_client=None, root='.', deadline_ms=40000,
             health['steps']['model'] = 'disabled_hold'
 
         proposal, adapter_meta = size_and_select(  # step 8
-            agent_output, portfolio_before, market, run_id, t, portfolio_before['revision'])
+            agent_output, portfolio_before, market, run_id, t, portfolio_before['revision'], policy)
 
     try:
-        result = RiskGateway(store).run(proposal, market, t)  # step 9
+        result = RiskGateway(store, policy=policy).run(proposal, market, t)  # step 9
         health['steps']['risk_gateway'] = result['status']
     except Exception as e:
         health['steps']['risk_gateway'] = 'failed'
@@ -272,14 +293,14 @@ def run_cycle(db, run_id, *, model_client=None, root='.', deadline_ms=40000,
         raise
 
     portfolio_after = store.read()  # step 10
-    pnl = _pnl(portfolio_after, market)
+    pnl = _pnl(portfolio_after, market, policy)
 
     # step 11: state projections
-    _atomic_json(root / 'state' / 'portfolio.json', portfolio_after)
-    _atomic_json(root / 'state' / 'risk_state.json', _risk_state(portfolio_after, market))
+    _atomic_json(state_dir / 'portfolio.json', portfolio_after)
+    _atomic_json(state_dir / 'risk_state.json', _risk_state(portfolio_after, market))
 
     consec = 0
-    agent_state_path = root / 'state' / 'agent_state.json'
+    agent_state_path = state_dir / 'agent_state.json'
     if agent_state_path.exists():
         try:
             consec = json.loads(agent_state_path.read_text()).get('consecutive_holds', 0)
@@ -299,7 +320,7 @@ def run_cycle(db, run_id, *, model_client=None, root='.', deadline_ms=40000,
     })
 
     # benchmarks in experiment.json
-    exp_path = root / 'state' / 'experiment.json'
+    exp_path = state_dir / 'experiment.json'
     exp = {}
     if exp_path.exists():
         try:
@@ -309,7 +330,7 @@ def run_cycle(db, run_id, *, model_client=None, root='.', deadline_ms=40000,
     prices = {s: market[s]['price'] for s in SYMBOLS}
     bench = exp.get('benchmarks')
     if not bench:
-        bench = benchmarks.init_state(prices, POLICY['initial_cash'])
+        bench = benchmarks.init_state(prices, policy['initial_cash'])
     if not replay:
         bench = benchmarks.update(bench, prices,
                                   {s: (ind.get(s, {}) or {}).get('mom_10') for s in SYMBOLS})
@@ -317,7 +338,7 @@ def run_cycle(db, run_id, *, model_client=None, root='.', deadline_ms=40000,
         'experiment_version': EXPERIMENT_VERSION,
         'mode': 'paper', 'cadence': 'every_4h', 'timezone': 'UTC',
         'universe': list(SYMBOLS),
-        'initial_cash_usdt': POLICY['initial_cash'],
+        'initial_cash_usdt': policy['initial_cash'],
         'started_ms': portfolio_after['started_ms'], 'ends_ms': portfolio_after['ends_ms'],
         'policy_hash': portfolio_after['policy_hash'],
         'last_run_id': run_id, 'last_recorded_utc': _utc(result['recorded_ms']),
@@ -332,7 +353,7 @@ def run_cycle(db, run_id, *, model_client=None, root='.', deadline_ms=40000,
     exp.setdefault('changelog', [
         {'version': EXPERIMENT_VERSION, 'utc': _utc(portfolio_after['started_ms']),
          'change': f'baseline: 5-symbol spot universe, every-4h cadence, Kimi K3 agent, '
-                   f'fixed POLICY, initial_cash_usdt={POLICY["initial_cash"]}'}])
+                   f'fixed POLICY, initial_cash_usdt={policy["initial_cash"]}'}])
     _atomic_json(exp_path, exp)
 
     # step 12: decision log + trades
@@ -359,7 +380,7 @@ def run_cycle(db, run_id, *, model_client=None, root='.', deadline_ms=40000,
         # idempotent replay must not overwrite it with a sparser one.
         _atomic_json(decision_path, decision)
     if result['fills'] and not replay:
-        _append_trades(root / 'trades' / 'trades.csv', run_id, result['recorded_ms'], result['fills'])
+        _append_trades(trades_path, run_id, result['recorded_ms'], result['fills'])
 
     # step 13: workflow health (+ a dedicated error record when anything degraded)
     health.update({'result': 'ok', 'risk_status': result['status'], 'risk_reason': result['reason'],
@@ -378,7 +399,7 @@ def run_cycle(db, run_id, *, model_client=None, root='.', deadline_ms=40000,
             'errors': health['errors']}
 
 
-def run_risk_check(db, run_id, *, root='.', now_ms_fn=now_ms, market_fn=fetch):
+def run_risk_check(db, run_id, *, root='.', now_ms_fn=now_ms, market_fn=fetch, policy=None, profile='baseline'):
     """Hourly deterministic safety pass between the 4-hour Kimi cycles.
 
     No model, no indicators, no benchmark rebalance. Fetches trusted market and
@@ -387,7 +408,10 @@ def run_risk_check(db, run_id, *, root='.', now_ms_fn=now_ms, market_fn=fetch):
     logs/risk/<run_id>.json. `run_id` MUST use a distinct prefix (e.g. 'risk-')
     so it never occupies a 4-hour trading slot id.
     """
+    policy = DEFAULT_POLICY if policy is None else policy
     root = Path(root)
+    state_dir = root / 'state' / profile
+    trades_path = root / 'trades' / f'{profile}.csv'
     started = time.monotonic()
     health = {'run_id': run_id, 'kind': 'risk_check',
               'started_utc': _utc(now_ms_fn()), 'steps': {}, 'errors': []}
@@ -416,7 +440,7 @@ def run_risk_check(db, run_id, *, root='.', now_ms_fn=now_ms, market_fn=fetch):
                         reason='hourly deterministic risk check')
 
     try:
-        result = RiskGateway(store).run(proposal, market, t)
+        result = RiskGateway(store, policy=policy).run(proposal, market, t)
         health['steps']['risk_gateway'] = result['status']
     except Exception as e:
         health['steps']['risk_gateway'] = 'failed'
@@ -427,11 +451,11 @@ def run_risk_check(db, run_id, *, root='.', now_ms_fn=now_ms, market_fn=fetch):
         raise
 
     portfolio_after = store.read()
-    pnl = _pnl(portfolio_after, market)
+    pnl = _pnl(portfolio_after, market, policy)
     exits = [f for f in result['fills'] if f['reason'] != 'proposal']
 
-    _atomic_json(root / 'state' / 'portfolio.json', portfolio_after)
-    _atomic_json(root / 'state' / 'risk_state.json', _risk_state(portfolio_after, market))
+    _atomic_json(state_dir / 'portfolio.json', portfolio_after)
+    _atomic_json(state_dir / 'risk_state.json', _risk_state(portfolio_after, market))
 
     record = {
         'run_id': run_id, 'kind': 'risk_check',
@@ -448,7 +472,7 @@ def run_risk_check(db, run_id, *, root='.', now_ms_fn=now_ms, market_fn=fetch):
     if not (replay and risk_path.exists()):
         _atomic_json(risk_path, record)
     if exits and not replay:
-        _append_trades(root / 'trades' / 'trades.csv', run_id, result['recorded_ms'], result['fills'])
+        _append_trades(trades_path, run_id, result['recorded_ms'], result['fills'])
 
     health.update({'result': 'ok', 'risk_status': result['status'], 'risk_reason': result['reason'],
                    'risk_exits': len(exits), 'pnl': pnl, 'finished_utc': _utc(now_ms_fn()),
