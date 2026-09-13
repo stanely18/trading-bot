@@ -32,7 +32,7 @@ class NvidiaKimiClient(ModelClient):
     # 1.0 with thinking always on. The strict system prompt + schema validation
     # + HOLD fallback keep the structured output safe at that temperature.
     def __init__(self, api_key=None, base_url=DEFAULT_BASE_URL,
-                 model=DEFAULT_MODEL, timeout=45, temperature=1.0, top_p=0.95):
+                 model=DEFAULT_MODEL, timeout=100, temperature=1.0, top_p=0.95):
         self._key = api_key if api_key is not None else os.environ.get('NVIDIA_API_KEY') or None
         self.base_url = base_url.rstrip('/')
         self.model = model

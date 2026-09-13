@@ -6,6 +6,20 @@ Technical bug fixes that do not change strategy conditions are listed under a
 dated "infra" entry and do not bump the version. During a live 30-day run the
 fixed conditions are: Kimi system prompt, enforced POLICY, universe, cadence.
 
+## infra — 2026-09-13
+
+- **Kimi/NIM call timeout raised 40s → 100s.** `trading_bot/cycle.py`
+  `run_cycle(deadline_ms=...)` default and `trading_bot/model/nvidia.py`
+  `NvidiaKimiClient(timeout=...)` default (the effective timeout is
+  `min(client.timeout, deadline_ms/1000)`, so both had to move together).
+  The 2026-09-12 daily review found 8 of 9 decision cycles across all three
+  profiles failing with `TimeoutError` at ~42s wall time against the old 40s
+  deadline; NIM latency for Kimi K3 was regularly exceeding it. No change to
+  the model, prompt, or RiskGateway fallback behaviour — a slow/failed call
+  still safely defaults to HOLD either way, this just gives a live response a
+  fairer chance to land before that fallback kicks in. GitHub Actions'
+  `trading-cycle` job timeout (10 min) has ample headroom above 100s.
+
 ## v1.1 — live start 2026-09-11T02:33:47Z (ends 2026-10-11T02:33:47Z)
 
 **Strategy-condition change, so the version bumps.** Two things changed:

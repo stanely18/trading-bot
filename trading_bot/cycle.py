@@ -229,7 +229,7 @@ def _append_trades(csv_path: Path, run_id, recorded_ms, fills):
                         repr(fl['qty']), repr(fl['price']), repr(fl['fee']), fl['reason']])
 
 
-def run_cycle(db, run_id, *, model_client=None, root='.', deadline_ms=40000,
+def run_cycle(db, run_id, *, model_client=None, root='.', deadline_ms=100000,
               now_ms_fn=now_ms, market_fn=fetch, candles_fn=fetch_candles,
               candle_bar='1H', candle_limit=120, policy=None, profile='baseline'):
     policy = DEFAULT_POLICY if policy is None else policy
