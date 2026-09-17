@@ -1,0 +1,27 @@
+{
+  "duration_ms": 102213,
+  "errors": [
+    "model:model call failed: TimeoutError: The read operation timed out"
+  ],
+  "experiment_version": "v1.1",
+  "fills": 0,
+  "finished_utc": "2026-09-17T04:01:48.744000Z",
+  "pnl": {
+    "nav": 9.9341,
+    "realized_pnl": -0.0679,
+    "total_pnl": -0.0659,
+    "unrealized_pnl": 0.0019
+  },
+  "result": "ok",
+  "risk_reason": "hold",
+  "risk_status": "held",
+  "run_id": "experiment-baseline-2026-09-17T04Z",
+  "started_utc": "2026-09-17T04:00:06.530000Z",
+  "steps": {
+    "indicators": "ok",
+    "load_state": "ok",
+    "market": "ok",
+    "model": "error_hold_fallback",
+    "risk_gateway": "held"
+  }
+}
