@@ -1,0 +1,27 @@
+{
+  "duration_ms": 83755,
+  "errors": [
+    "model:model output invalid: ValueError: agent output fields mismatch | parsed keys: ['market_regime', 'portfolio_view', 'candidates', '_note'] | snippet: {\"market_regime\": \"risk_on\", \"portfolio_view\": \"neutral\", \"candidates\": [{\"symbol\": \"BNB-USDT\", \"action\": \"BUY\", \"confidence\": 0.45, \"target_allocation\": 0.15, \"thesis\": \"Strongest relative performer in the universe (per advisory cross-section) with the least-extreme RSI (71 vs 81-91 elsewhere), pri"
+  ],
+  "experiment_version": "v1.1",
+  "fills": 0,
+  "finished_utc": "2026-09-18T12:06:25.674000Z",
+  "pnl": {
+    "nav": 10.0,
+    "realized_pnl": 0.0,
+    "total_pnl": 0.0,
+    "unrealized_pnl": 0
+  },
+  "result": "ok",
+  "risk_reason": "hold",
+  "risk_status": "held",
+  "run_id": "experiment-aggressive-2026-09-18T12Z",
+  "started_utc": "2026-09-18T12:05:01.919000Z",
+  "steps": {
+    "indicators": "ok",
+    "load_state": "ok",
+    "market": "ok",
+    "model": "error_hold_fallback",
+    "risk_gateway": "held"
+  }
+}
