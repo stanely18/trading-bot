@@ -1,0 +1,14 @@
+{
+  "errors": [
+    "model:model output invalid: ValueError: candidate fields mismatch | parsed keys: ['market_regime', 'portfolio_view', 'candidates'] | snippet: {\"market_regime\": \"risk_on\", \"portfolio_view\": \"neutral\", \"candidates\": [{\"symbol\": \"BTC-USDT\", \"action\": \"HOLD\", \"confidence\": 0.55, \"target_allocation\": 0.1, \"thesis\": \"Trend is up (price > SMA20 > SMA50, positive 10/30d momentum) and the position is in profit, but RSI 87.5 is extremely overbought"
+  ],
+  "recorded_utc": "2026-09-18T20:00:07.680000Z",
+  "run_id": "experiment-baseline-2026-09-18T20Z",
+  "steps": {
+    "indicators": "ok",
+    "load_state": "ok",
+    "market": "ok",
+    "model": "error_hold_fallback",
+    "risk_gateway": "held"
+  }
+}
