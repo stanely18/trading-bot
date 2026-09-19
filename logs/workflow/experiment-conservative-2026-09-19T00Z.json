@@ -1,0 +1,27 @@
+{
+  "duration_ms": 129989,
+  "errors": [
+    "model:model output invalid: ValueError: agent output fields mismatch | parsed keys: ['market_regime', 'portfolio_view', 'candidates', 'risk_notes_summary'] | snippet: {\"market_regime\": \"risk_on\", \"portfolio_view\": \"neutral\", \"candidates\": [{\"symbol\": \"BTC-USDT\", \"action\": \"HOLD\", \"confidence\": 0.55, \"target_allocation\": 0.05, \"thesis\": \"Uptrend intact (price > SMA20 > SMA50) and position is in profit from 76.8k entry, but RSI 78 and slightly negative 10-day momen"
+  ],
+  "experiment_version": "v1.1",
+  "fills": 0,
+  "finished_utc": "2026-09-19T00:12:15.314000Z",
+  "pnl": {
+    "nav": 10.0293,
+    "realized_pnl": 0.0056,
+    "total_pnl": 0.0293,
+    "unrealized_pnl": 0.0237
+  },
+  "result": "ok",
+  "risk_reason": "hold",
+  "risk_status": "held",
+  "run_id": "experiment-conservative-2026-09-19T00Z",
+  "started_utc": "2026-09-19T00:10:05.325000Z",
+  "steps": {
+    "indicators": "ok",
+    "load_state": "ok",
+    "market": "ok",
+    "model": "error_hold_fallback",
+    "risk_gateway": "held"
+  }
+}

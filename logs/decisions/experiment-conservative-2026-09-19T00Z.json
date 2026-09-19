@@ -1,0 +1,251 @@
+{
+  "adapter": {
+    "chosen": null,
+    "considered": [],
+    "decision": "hold",
+    "nav": 10.029267869063503
+  },
+  "agent": {
+    "error": "model output invalid: ValueError: agent output fields mismatch | parsed keys: ['market_regime', 'portfolio_view', 'candidates', 'risk_notes_summary'] | snippet: {\"market_regime\": \"risk_on\", \"portfolio_view\": \"neutral\", \"candidates\": [{\"symbol\": \"BTC-USDT\", \"action\": \"HOLD\", \"confidence\": 0.55, \"target_allocation\": 0.05, \"thesis\": \"Uptrend intact (price > SMA20 > SMA50) and position is in profit from 76.8k entry, but RSI 78 and slightly negative 10-day momen",
+    "status": "model_error"
+  },
+  "errors": [
+    "model:model output invalid: ValueError: agent output fields mismatch | parsed keys: ['market_regime', 'portfolio_view', 'candidates', 'risk_notes_summary'] | snippet: {\"market_regime\": \"risk_on\", \"portfolio_view\": \"neutral\", \"candidates\": [{\"symbol\": \"BTC-USDT\", \"action\": \"HOLD\", \"confidence\": 0.55, \"target_allocation\": 0.05, \"thesis\": \"Uptrend intact (price > SMA20 > SMA50) and position is in profit from 76.8k entry, but RSI 78 and slightly negative 10-day momen"
+  ],
+  "executed": [],
+  "experiment_version": "v1.1",
+  "indicators": {
+    "BNB-USDT": {
+      "last": 760.5,
+      "mom_10": 0.013150973172026958,
+      "mom_30": 4.435594616863492,
+      "rsi_14": 59.55334987593064,
+      "sma_20": 757.865,
+      "sma_50": 741.796,
+      "trend": "up",
+      "vol_20": 0.47877683593199316
+    },
+    "BTC-USDT": {
+      "last": 80866.8,
+      "mom_10": -0.09883034289187576,
+      "mom_30": 5.607597465944236,
+      "rsi_14": 78.23772915434628,
+      "sma_20": 79740.81,
+      "sma_50": 77853.664,
+      "trend": "up",
+      "vol_20": 0.6412018828362507
+    },
+    "ETH-USDT": {
+      "last": 2608.97,
+      "mom_10": 1.015588096362774,
+      "mom_30": 6.407354386651809,
+      "rsi_14": 77.58820127241175,
+      "sma_20": 2563.5445,
+      "sma_50": 2494.8478,
+      "trend": "up",
+      "vol_20": 0.5795159052623873
+    },
+    "SOL-USDT": {
+      "last": 112.55,
+      "mom_10": 1.60693328518553,
+      "mom_30": 11.590323220305375,
+      "rsi_14": 77.09593777009503,
+      "sma_20": 109.68699999999998,
+      "sma_50": 104.4164,
+      "trend": "up",
+      "vol_20": 0.8792540054462913
+    },
+    "XRP-USDT": {
+      "last": 1.3989,
+      "mom_10": -0.11424491253124724,
+      "mom_30": 7.989810097267247,
+      "rsi_14": 70.26044821320413,
+      "sma_20": 1.36694,
+      "sma_50": 1.327926,
+      "trend": "up",
+      "vol_20": 1.0697858895348547
+    }
+  },
+  "market": {
+    "BNB-USDT": {
+      "price": 760.5,
+      "source": "okx_public",
+      "symbol": "BNB-USDT",
+      "ts_ms": 1789776605263
+    },
+    "BTC-USDT": {
+      "price": 80866.8,
+      "source": "okx_public",
+      "symbol": "BTC-USDT",
+      "ts_ms": 1789776605067
+    },
+    "ETH-USDT": {
+      "price": 2608.97,
+      "source": "okx_public",
+      "symbol": "ETH-USDT",
+      "ts_ms": 1789776604665
+    },
+    "SOL-USDT": {
+      "price": 112.55,
+      "source": "okx_public",
+      "symbol": "SOL-USDT",
+      "ts_ms": 1789776605265
+    },
+    "XRP-USDT": {
+      "price": 1.3989,
+      "source": "okx_public",
+      "symbol": "XRP-USDT",
+      "ts_ms": 1789776605368
+    }
+  },
+  "pnl": {
+    "nav": 10.0293,
+    "realized_pnl": 0.0056,
+    "total_pnl": 0.0293,
+    "unrealized_pnl": 0.0237
+  },
+  "portfolio_after": {
+    "cash": 9.005597747896623,
+    "daily_orders": 0,
+    "day": "2026-09-19",
+    "day_equity": 10.032529985368999,
+    "ends_ms": 1791837209969,
+    "halted": false,
+    "last_equity": 10.029267869063503,
+    "last_run_hash": "9fdc839769b6486bddb52601bad9c7e2051b919bd8cf5bc94999543d21df9824",
+    "market": {
+      "BNB-USDT": {
+        "price": 760.5,
+        "source": "okx_public",
+        "symbol": "BNB-USDT",
+        "ts_ms": 1789776605263
+      },
+      "BTC-USDT": {
+        "price": 80866.8,
+        "source": "okx_public",
+        "symbol": "BTC-USDT",
+        "ts_ms": 1789776605067
+      },
+      "ETH-USDT": {
+        "price": 2608.97,
+        "source": "okx_public",
+        "symbol": "ETH-USDT",
+        "ts_ms": 1789776604665
+      },
+      "SOL-USDT": {
+        "price": 112.55,
+        "source": "okx_public",
+        "symbol": "SOL-USDT",
+        "ts_ms": 1789776605265
+      },
+      "XRP-USDT": {
+        "price": 1.3989,
+        "source": "okx_public",
+        "symbol": "XRP-USDT",
+        "ts_ms": 1789776605368
+      }
+    },
+    "mode": "paper",
+    "peak_equity": 10.034956842545334,
+    "policy_hash": "b3cd4a38307af67d850617853bcbbabffed0ab182ef717fc339e6f29839c705f",
+    "positions": {
+      "BNB-USDT": {
+        "entry_price": 764.6821499999999,
+        "qty": 0.000653866446339829,
+        "stop_price": 749.3885069999999
+      },
+      "BTC-USDT": {
+        "entry_price": 76810.48605,
+        "qty": 6.509527874547279e-06,
+        "stop_price": 75274.276329
+      }
+    },
+    "revision": 185,
+    "schema_version": 1,
+    "started_ms": 1789245209969
+  },
+  "portfolio_before": {
+    "cash": 9.005597747896623,
+    "daily_orders": 0,
+    "day": "2026-09-19",
+    "day_equity": 10.032529985368999,
+    "ends_ms": 1791837209969,
+    "halted": false,
+    "last_equity": 10.029279586213677,
+    "last_run_hash": "4256d9a46da76112c9a321f037877a69b8a04eec42b7d84e92aa211f0264d3f3",
+    "market": {
+      "BNB-USDT": {
+        "price": 760.5,
+        "source": "okx_public",
+        "symbol": "BNB-USDT",
+        "ts_ms": 1789776603068
+      },
+      "BTC-USDT": {
+        "price": 80868.6,
+        "source": "okx_public",
+        "symbol": "BTC-USDT",
+        "ts_ms": 1789776602261
+      },
+      "ETH-USDT": {
+        "price": 2608.74,
+        "source": "okx_public",
+        "symbol": "ETH-USDT",
+        "ts_ms": 1789776601967
+      },
+      "SOL-USDT": {
+        "price": 112.55,
+        "source": "okx_public",
+        "symbol": "SOL-USDT",
+        "ts_ms": 1789776602166
+      },
+      "XRP-USDT": {
+        "price": 1.3989,
+        "source": "okx_public",
+        "symbol": "XRP-USDT",
+        "ts_ms": 1789776603071
+      }
+    },
+    "mode": "paper",
+    "peak_equity": 10.034956842545334,
+    "policy_hash": "b3cd4a38307af67d850617853bcbbabffed0ab182ef717fc339e6f29839c705f",
+    "positions": {
+      "BNB-USDT": {
+        "entry_price": 764.6821499999999,
+        "qty": 0.000653866446339829,
+        "stop_price": 749.3885069999999
+      },
+      "BTC-USDT": {
+        "entry_price": 76810.48605,
+        "qty": 6.509527874547279e-06,
+        "stop_price": 75274.276329
+      }
+    },
+    "revision": 184,
+    "schema_version": 1,
+    "started_ms": 1789245209969
+  },
+  "proposal": {
+    "action": "HOLD",
+    "agent": "kimi-k3",
+    "created_ms": 1789776605329,
+    "expected_revision": 184,
+    "id": "experiment-conservative-2026-09-19T00Z",
+    "notional": 0,
+    "reason": "no actionable candidate",
+    "symbol": "BTC-USDT"
+  },
+  "recorded_ms": 1789776605329,
+  "recorded_utc": "2026-09-19T00:10:05.329000Z",
+  "revision_after": 185,
+  "revision_before": 184,
+  "risk_exits": [],
+  "risk_result": {
+    "equity": 10.029267869063503,
+    "fills": [],
+    "hash": "9fdc839769b6486bddb52601bad9c7e2051b919bd8cf5bc94999543d21df9824",
+    "previous_hash": "4256d9a46da76112c9a321f037877a69b8a04eec42b7d84e92aa211f0264d3f3",
+    "reason": "hold",
+    "status": "held"
+  },
+  "run_id": "experiment-conservative-2026-09-19T00Z"
+}
