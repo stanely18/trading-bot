@@ -1,0 +1,27 @@
+{
+  "duration_ms": 94363,
+  "errors": [
+    "model:model output invalid: ValueError: agent output fields mismatch | parsed keys: ['market_regime', 'portfolio_view', 'candidates', 'risk_notes_aggregate'] | snippet: {\"market_regime\": \"risk_on\", \"portfolio_view\": \"add_risk\", \"candidates\": [{\"symbol\": \"BTC-USDT\", \"action\": \"BUY\", \"confidence\": 0.6, \"target_allocation\": 0.2, \"thesis\": \"Price above SMA20/50 with trend up, positive 10/30-day momentum (0.25%/6.2%), RSI 53 neutral \\u2014 cleanest low-volatility (0.68)"
+  ],
+  "experiment_version": "v1.1",
+  "fills": 0,
+  "finished_utc": "2026-09-19T04:06:37.133000Z",
+  "pnl": {
+    "nav": 10.0,
+    "realized_pnl": 0.0,
+    "total_pnl": 0.0,
+    "unrealized_pnl": 0
+  },
+  "result": "ok",
+  "risk_reason": "hold",
+  "risk_status": "held",
+  "run_id": "experiment-aggressive-2026-09-19T04Z",
+  "started_utc": "2026-09-19T04:05:02.770000Z",
+  "steps": {
+    "indicators": "ok",
+    "load_state": "ok",
+    "market": "ok",
+    "model": "error_hold_fallback",
+    "risk_gateway": "held"
+  }
+}
