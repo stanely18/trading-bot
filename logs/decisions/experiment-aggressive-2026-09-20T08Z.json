@@ -1,0 +1,295 @@
+{
+  "adapter": {
+    "chosen": {
+      "action": "BUY",
+      "confidence": 0.45,
+      "raw_notional": 2.0,
+      "result": "resized",
+      "sized_notional": 1.0,
+      "symbol": "BTC-USDT",
+      "target_allocation": 0.2
+    },
+    "considered": [
+      {
+        "action": "HOLD",
+        "confidence": 0.5,
+        "result": "noop",
+        "symbol": "ETH-USDT",
+        "target_allocation": 0.0
+      },
+      {
+        "action": "BUY",
+        "confidence": 0.45,
+        "raw_notional": 2.0,
+        "result": "resized",
+        "sized_notional": 1.0,
+        "symbol": "BTC-USDT",
+        "target_allocation": 0.2
+      }
+    ],
+    "decision": "resized",
+    "nav": 10.0
+  },
+  "agent": {
+    "latency_ms": 83974,
+    "model": "moonshotai/kimi-k3",
+    "output": {
+      "candidates": [
+        {
+          "action": "BUY",
+          "confidence": 0.45,
+          "invalidation": "RSI fails to recover above 35 and price breaks decisively below recent lows with momentum accelerating negative; or trend flips to 'down' on rising volatility.",
+          "risk_notes": [
+            "Contrarian entry against broad negative momentum across all symbols",
+            "Drawdown regime per weekly review; alt/BTC ratios weak, so no alt beta is justified yet",
+            "Weekend/liquidity gaps could extend the slide before any bounce"
+          ],
+          "symbol": "BTC-USDT",
+          "target_allocation": 0.2,
+          "thesis": "RSI(14) at 26 with negative-but-stabilizing momentum (mom_10 -1.0 vs mom_30 -1.06), price sitting between SMA20/50 in a flat trend: a classic short-term oversold mean-reversion setup on the lowest-volatility asset in the universe. Flat trend plus extreme RSI favors a bounce toward SMA20 ~81k rather than continuation."
+        },
+        {
+          "action": "HOLD",
+          "confidence": 0.5,
+          "invalidation": "ETH/BTC ratio recovery and BTC thesis confirmed would justify rotating into ETH next cycle.",
+          "risk_notes": [
+            "Oversold can stay oversold in a drawdown regime"
+          ],
+          "symbol": "ETH-USDT",
+          "target_allocation": 0.0,
+          "thesis": "Deepest oversold reading (RSI ~25) but ETH/BTC relative weakness flagged in the review and trend is only flat; prefer the lower-volatility BTC for the single mean-reversion slot."
+        }
+      ],
+      "market_regime": "neutral",
+      "portfolio_view": "add_risk"
+    },
+    "provider": "nvidia_nim",
+    "request_id": "chatcmpl-a8659f34-867e-4561-ac8c-3b2ac16d221e",
+    "status": "ok",
+    "usage": {
+      "completion_tokens": 358,
+      "prompt_tokens": 2270,
+      "prompt_tokens_details": {
+        "audio_tokens": null,
+        "cached_tokens": 0
+      },
+      "total_tokens": 2628
+    }
+  },
+  "errors": [],
+  "executed": [],
+  "experiment_version": "v1.1",
+  "indicators": {
+    "BNB-USDT": {
+      "last": 748.6,
+      "mom_10": -1.7198372062491862,
+      "mom_30": -1.7585301837270362,
+      "rsi_14": 28.695652173913217,
+      "sma_20": 759.04,
+      "sma_50": 760.076,
+      "trend": "down",
+      "vol_20": 0.4756702632296032
+    },
+    "BTC-USDT": {
+      "last": 80450.8,
+      "mom_10": -1.0015418748854032,
+      "mom_30": -1.0576700758078927,
+      "rsi_14": 26.20606644198378,
+      "sma_20": 81035.36,
+      "sma_50": 80714.746,
+      "trend": "flat",
+      "vol_20": 0.2803936440592925
+    },
+    "ETH-USDT": {
+      "last": 2583.25,
+      "mom_10": -1.8126601138756526,
+      "mom_30": -1.5402148144195493,
+      "rsi_14": 24.91667417349801,
+      "sma_20": 2615.9265,
+      "sma_50": 2604.1254,
+      "trend": "flat",
+      "vol_20": 0.4427612863305028
+    },
+    "SOL-USDT": {
+      "last": 108.7,
+      "mom_10": -1.7623136014460083,
+      "mom_30": -4.338642964005979,
+      "rsi_14": 32.05882352941181,
+      "sma_20": 110.26500000000001,
+      "sma_50": 110.73479999999999,
+      "trend": "down",
+      "vol_20": 0.6412704527354242
+    },
+    "XRP-USDT": {
+      "last": 1.3834,
+      "mom_10": -2.343639700691802,
+      "mom_30": -2.1433118766357784,
+      "rsi_14": 26.117886178861937,
+      "sma_20": 1.407995,
+      "sma_50": 1.398034,
+      "trend": "flat",
+      "vol_20": 0.6509420433884144
+    }
+  },
+  "market": {
+    "BNB-USDT": {
+      "price": 748.6,
+      "source": "okx_public",
+      "symbol": "BNB-USDT",
+      "ts_ms": 1789891502972
+    },
+    "BTC-USDT": {
+      "price": 80450.8,
+      "source": "okx_public",
+      "symbol": "BTC-USDT",
+      "ts_ms": 1789891502863
+    },
+    "ETH-USDT": {
+      "price": 2583.25,
+      "source": "okx_public",
+      "symbol": "ETH-USDT",
+      "ts_ms": 1789891502364
+    },
+    "SOL-USDT": {
+      "price": 108.7,
+      "source": "okx_public",
+      "symbol": "SOL-USDT",
+      "ts_ms": 1789891502569
+    },
+    "XRP-USDT": {
+      "price": 1.3834,
+      "source": "okx_public",
+      "symbol": "XRP-USDT",
+      "ts_ms": 1789891503131
+    }
+  },
+  "pnl": {
+    "nav": 10.0,
+    "realized_pnl": 0.0,
+    "total_pnl": 0.0,
+    "unrealized_pnl": 0
+  },
+  "portfolio_after": {
+    "cash": 10.0,
+    "daily_orders": 0,
+    "day": "2026-09-20",
+    "day_equity": 10.0,
+    "ends_ms": 1791837209834,
+    "halted": false,
+    "last_equity": 10.0,
+    "last_run_hash": "16cd37f2a4033fb16ffebf2f0cd9b8579d566726fb501b229f88936e52cd0316",
+    "market": {
+      "BNB-USDT": {
+        "price": 748.6,
+        "source": "okx_public",
+        "symbol": "BNB-USDT",
+        "ts_ms": 1789891502972
+      },
+      "BTC-USDT": {
+        "price": 80450.8,
+        "source": "okx_public",
+        "symbol": "BTC-USDT",
+        "ts_ms": 1789891502863
+      },
+      "ETH-USDT": {
+        "price": 2583.25,
+        "source": "okx_public",
+        "symbol": "ETH-USDT",
+        "ts_ms": 1789891502364
+      },
+      "SOL-USDT": {
+        "price": 108.7,
+        "source": "okx_public",
+        "symbol": "SOL-USDT",
+        "ts_ms": 1789891502569
+      },
+      "XRP-USDT": {
+        "price": 1.3834,
+        "source": "okx_public",
+        "symbol": "XRP-USDT",
+        "ts_ms": 1789891503131
+      }
+    },
+    "mode": "paper",
+    "peak_equity": 10.0,
+    "policy_hash": "e38cadc14e22b58ae4a45eca54324a094ca22ec6f4e282e3fe4428cecec25c98",
+    "positions": {},
+    "revision": 224,
+    "schema_version": 1,
+    "started_ms": 1789245209834
+  },
+  "portfolio_before": {
+    "cash": 10.0,
+    "daily_orders": 0,
+    "day": "2026-09-20",
+    "day_equity": 10.0,
+    "ends_ms": 1791837209834,
+    "halted": false,
+    "last_equity": 10.0,
+    "last_run_hash": "d759f9425cbded8b800385c756456edd8665039632149eeaf8500e1b3c6b2219",
+    "market": {
+      "BNB-USDT": {
+        "price": 751.6,
+        "source": "okx_public",
+        "symbol": "BNB-USDT",
+        "ts_ms": 1789887902771
+      },
+      "BTC-USDT": {
+        "price": 80305.6,
+        "source": "okx_public",
+        "symbol": "BTC-USDT",
+        "ts_ms": 1789887901665
+      },
+      "ETH-USDT": {
+        "price": 2573.74,
+        "source": "okx_public",
+        "symbol": "ETH-USDT",
+        "ts_ms": 1789887901760
+      },
+      "SOL-USDT": {
+        "price": 108.73,
+        "source": "okx_public",
+        "symbol": "SOL-USDT",
+        "ts_ms": 1789887902470
+      },
+      "XRP-USDT": {
+        "price": 1.3826,
+        "source": "okx_public",
+        "symbol": "XRP-USDT",
+        "ts_ms": 1789887902566
+      }
+    },
+    "mode": "paper",
+    "peak_equity": 10.0,
+    "policy_hash": "e38cadc14e22b58ae4a45eca54324a094ca22ec6f4e282e3fe4428cecec25c98",
+    "positions": {},
+    "revision": 223,
+    "schema_version": 1,
+    "started_ms": 1789245209834
+  },
+  "proposal": {
+    "action": "BUY",
+    "agent": "kimi-k3",
+    "created_ms": 1789891502873,
+    "expected_revision": 223,
+    "id": "experiment-aggressive-2026-09-20T08Z",
+    "leverage": 5,
+    "notional": 1.0,
+    "reason": "RSI(14) at 26 with negative-but-stabilizing momentum (mom_10 -1.0 vs mom_30 -1.06), price sitting between SMA20/50 in a flat trend: a classic short-term oversold mean-reversion setup on the lowest-volatility asset in the universe. Flat trend plus extreme RSI favors a bounce toward SMA20 ~81k rather than continuation.",
+    "symbol": "BTC-USDT"
+  },
+  "recorded_ms": 1789891502873,
+  "recorded_utc": "2026-09-20T08:05:02.873000Z",
+  "revision_after": 224,
+  "revision_before": 223,
+  "risk_exits": [],
+  "risk_result": {
+    "equity": 10.0,
+    "fills": [],
+    "hash": "16cd37f2a4033fb16ffebf2f0cd9b8579d566726fb501b229f88936e52cd0316",
+    "previous_hash": "d759f9425cbded8b800385c756456edd8665039632149eeaf8500e1b3c6b2219",
+    "reason": "planned_loss_cap",
+    "status": "rejected"
+  },
+  "run_id": "experiment-aggressive-2026-09-20T08Z"
+}
