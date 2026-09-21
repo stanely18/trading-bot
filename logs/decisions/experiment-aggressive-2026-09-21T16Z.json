@@ -1,0 +1,285 @@
+{
+  "adapter": {
+    "chosen": null,
+    "considered": [
+      {
+        "action": "HOLD",
+        "confidence": 0.4,
+        "result": "noop",
+        "symbol": "BTC-USDT",
+        "target_allocation": 0.0
+      },
+      {
+        "action": "HOLD",
+        "confidence": 0.4,
+        "result": "noop",
+        "symbol": "SOL-USDT",
+        "target_allocation": 0.0
+      }
+    ],
+    "decision": "hold",
+    "nav": 10.0
+  },
+  "agent": {
+    "latency_ms": 92066,
+    "model": "moonshotai/kimi-k3",
+    "output": {
+      "candidates": [
+        {
+          "action": "HOLD",
+          "confidence": 0.4,
+          "invalidation": "If price consolidates and RSI resets below 70 while holding above SMA20, trend-long entry becomes attractive; a break below SMA20 (~83k) would confirm the chase-avoidance call.",
+          "risk_notes": [
+            "Extreme overbought RSI across the entire universe suggests late-stage move",
+            "Elevated volatility (vol_20 ~0.64) amplifies drawdown risk",
+            "Flat book with tiny NAV; no edge in forcing a trade"
+          ],
+          "symbol": "BTC-USDT",
+          "target_allocation": 0.0,
+          "thesis": "Strong uptrend (price above SMA20/50, positive 10/30d momentum) but RSI-14 at 92 is extremely overbought; chasing here has poor risk/reward. Wait for a pullback toward SMA20 (~83k) before entering."
+        },
+        {
+          "action": "HOLD",
+          "confidence": 0.4,
+          "invalidation": "A pullback to SMA20 with RSI cooling below 65 and trend intact would flip this to a buy candidate.",
+          "risk_notes": [
+            "Highest vol in universe with potential leverage multiplier applied downstream",
+            "Parabolic RSI readings historically precede sharp 5-10% retracements"
+          ],
+          "symbol": "SOL-USDT",
+          "target_allocation": 0.0,
+          "thesis": "Strongest 30d momentum (+8.9%) but RSI-14 at 93 and highest volatility (0.78) in the universe; worst candidate to chase. Monitor for a mean-reversion entry near SMA20 (~113.9)."
+        }
+      ],
+      "market_regime": "risk_on",
+      "portfolio_view": "neutral"
+    },
+    "provider": "nvidia_nim",
+    "request_id": "chatcmpl-18b74877-5a9b-4e72-b1d1-e956feff3580",
+    "status": "ok",
+    "usage": {
+      "completion_tokens": 413,
+      "prompt_tokens": 1527,
+      "prompt_tokens_details": {
+        "audio_tokens": null,
+        "cached_tokens": 0
+      },
+      "total_tokens": 1940
+    }
+  },
+  "errors": [],
+  "executed": [],
+  "experiment_version": "v1.1",
+  "indicators": {
+    "BNB-USDT": {
+      "last": 800.5,
+      "mom_10": 3.6380113930605917,
+      "mom_30": 6.890105488049136,
+      "rsi_14": 74.30406852248396,
+      "sma_20": 781.87,
+      "sma_50": 767.57,
+      "trend": "up",
+      "vol_20": 0.6133905768202359
+    },
+    "BTC-USDT": {
+      "last": 85764.7,
+      "mom_10": 5.05358958340989,
+      "mom_30": 6.778759960159353,
+      "rsi_14": 92.13129666830918,
+      "sma_20": 83053.0,
+      "sma_50": 81768.006,
+      "trend": "up",
+      "vol_20": 0.6361532180781717
+    },
+    "ETH-USDT": {
+      "last": 2746.01,
+      "mom_10": 3.107094312984837,
+      "mom_30": 6.786311491347474,
+      "rsi_14": 82.01630724681908,
+      "sma_20": 2689.965,
+      "sma_50": 2641.68,
+      "trend": "up",
+      "vol_20": 0.6469902868591257
+    },
+    "SOL-USDT": {
+      "last": 117.69,
+      "mom_10": 4.9023977181567036,
+      "mom_30": 8.931877082562,
+      "rsi_14": 92.95212765957461,
+      "sma_20": 113.9185,
+      "sma_50": 111.3672,
+      "trend": "up",
+      "vol_20": 0.7831089121334773
+    },
+    "XRP-USDT": {
+      "last": 1.4961,
+      "mom_10": 4.156223893066002,
+      "mom_30": 8.696599825632067,
+      "rsi_14": 88.04554079696399,
+      "sma_20": 1.450615,
+      "sma_50": 1.4198240000000002,
+      "trend": "up",
+      "vol_20": 0.7597917320663933
+    }
+  },
+  "market": {
+    "BNB-USDT": {
+      "price": 800.5,
+      "source": "okx_public",
+      "symbol": "BNB-USDT",
+      "ts_ms": 1790006705965
+    },
+    "BTC-USDT": {
+      "price": 85765.1,
+      "source": "okx_public",
+      "symbol": "BTC-USDT",
+      "ts_ms": 1790006704671
+    },
+    "ETH-USDT": {
+      "price": 2746.74,
+      "source": "okx_public",
+      "symbol": "ETH-USDT",
+      "ts_ms": 1790006704669
+    },
+    "SOL-USDT": {
+      "price": 117.69,
+      "source": "okx_public",
+      "symbol": "SOL-USDT",
+      "ts_ms": 1790006705544
+    },
+    "XRP-USDT": {
+      "price": 1.4961,
+      "source": "okx_public",
+      "symbol": "XRP-USDT",
+      "ts_ms": 1790006705607
+    }
+  },
+  "pnl": {
+    "nav": 10.0,
+    "realized_pnl": 0.0,
+    "total_pnl": 0.0,
+    "unrealized_pnl": 0
+  },
+  "portfolio_after": {
+    "cash": 10.0,
+    "daily_orders": 0,
+    "day": "2026-09-21",
+    "day_equity": 10.0,
+    "ends_ms": 1791837209834,
+    "halted": false,
+    "last_equity": 10.0,
+    "last_run_hash": "aea8714b46ceae7473fdcec5abf6a949bf96ee98baaac0dc0adb893c219713a8",
+    "market": {
+      "BNB-USDT": {
+        "price": 800.5,
+        "source": "okx_public",
+        "symbol": "BNB-USDT",
+        "ts_ms": 1790006705965
+      },
+      "BTC-USDT": {
+        "price": 85765.1,
+        "source": "okx_public",
+        "symbol": "BTC-USDT",
+        "ts_ms": 1790006704671
+      },
+      "ETH-USDT": {
+        "price": 2746.74,
+        "source": "okx_public",
+        "symbol": "ETH-USDT",
+        "ts_ms": 1790006704669
+      },
+      "SOL-USDT": {
+        "price": 117.69,
+        "source": "okx_public",
+        "symbol": "SOL-USDT",
+        "ts_ms": 1790006705544
+      },
+      "XRP-USDT": {
+        "price": 1.4961,
+        "source": "okx_public",
+        "symbol": "XRP-USDT",
+        "ts_ms": 1790006705607
+      }
+    },
+    "mode": "paper",
+    "peak_equity": 10.0,
+    "policy_hash": "e38cadc14e22b58ae4a45eca54324a094ca22ec6f4e282e3fe4428cecec25c98",
+    "positions": {},
+    "revision": 265,
+    "schema_version": 1,
+    "started_ms": 1789245209834
+  },
+  "portfolio_before": {
+    "cash": 10.0,
+    "daily_orders": 0,
+    "day": "2026-09-21",
+    "day_equity": 10.0,
+    "ends_ms": 1791837209834,
+    "halted": false,
+    "last_equity": 10.0,
+    "last_run_hash": "c30486224b07faf0d9b55eb95d4ef0d6206c0337c085bf2bfcfd7784227728e5",
+    "market": {
+      "BNB-USDT": {
+        "price": 800.7,
+        "source": "okx_public",
+        "symbol": "BNB-USDT",
+        "ts_ms": 1790006702674
+      },
+      "BTC-USDT": {
+        "price": 85775.0,
+        "source": "okx_public",
+        "symbol": "BTC-USDT",
+        "ts_ms": 1790006701482
+      },
+      "ETH-USDT": {
+        "price": 2746.93,
+        "source": "okx_public",
+        "symbol": "ETH-USDT",
+        "ts_ms": 1790006702370
+      },
+      "SOL-USDT": {
+        "price": 117.72,
+        "source": "okx_public",
+        "symbol": "SOL-USDT",
+        "ts_ms": 1790006702072
+      },
+      "XRP-USDT": {
+        "price": 1.4965,
+        "source": "okx_public",
+        "symbol": "XRP-USDT",
+        "ts_ms": 1790006702771
+      }
+    },
+    "mode": "paper",
+    "peak_equity": 10.0,
+    "policy_hash": "e38cadc14e22b58ae4a45eca54324a094ca22ec6f4e282e3fe4428cecec25c98",
+    "positions": {},
+    "revision": 264,
+    "schema_version": 1,
+    "started_ms": 1789245209834
+  },
+  "proposal": {
+    "action": "HOLD",
+    "agent": "kimi-k3",
+    "created_ms": 1790006705391,
+    "expected_revision": 264,
+    "id": "experiment-aggressive-2026-09-21T16Z",
+    "notional": 0,
+    "reason": "no actionable candidate",
+    "symbol": "BTC-USDT"
+  },
+  "recorded_ms": 1790006705391,
+  "recorded_utc": "2026-09-21T16:05:05.391000Z",
+  "revision_after": 265,
+  "revision_before": 264,
+  "risk_exits": [],
+  "risk_result": {
+    "equity": 10.0,
+    "fills": [],
+    "hash": "aea8714b46ceae7473fdcec5abf6a949bf96ee98baaac0dc0adb893c219713a8",
+    "previous_hash": "c30486224b07faf0d9b55eb95d4ef0d6206c0337c085bf2bfcfd7784227728e5",
+    "reason": "hold",
+    "status": "held"
+  },
+  "run_id": "experiment-aggressive-2026-09-21T16Z"
+}
