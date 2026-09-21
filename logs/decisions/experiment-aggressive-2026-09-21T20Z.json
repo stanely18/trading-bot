@@ -1,0 +1,284 @@
+{
+  "adapter": {
+    "chosen": null,
+    "considered": [
+      {
+        "action": "HOLD",
+        "confidence": 0.55,
+        "result": "noop",
+        "symbol": "BTC-USDT",
+        "target_allocation": 0.0
+      },
+      {
+        "action": "HOLD",
+        "confidence": 0.5,
+        "result": "noop",
+        "symbol": "SOL-USDT",
+        "target_allocation": 0.0
+      }
+    ],
+    "decision": "hold",
+    "nav": 10.0
+  },
+  "agent": {
+    "latency_ms": 98874,
+    "model": "moonshotai/kimi-k3",
+    "output": {
+      "candidates": [
+        {
+          "action": "HOLD",
+          "confidence": 0.55,
+          "invalidation": "A pullback toward SMA20 (~84000) with RSI normalizing below ~65 would make a trend-following entry attractive; a break below SMA50 kills the trend thesis.",
+          "risk_notes": [
+            "Extreme overbought readings across the whole universe suggest correlated mean-reversion risk",
+            "Fixed leverage multiplier could amplify a sharp reversal"
+          ],
+          "symbol": "BTC-USDT",
+          "target_allocation": 0.0,
+          "thesis": "Strong uptrend (price above SMA20/50, positive 10/30d momentum), but RSI 95 is deeply overbought; chasing here offers poor risk/reward for a flat book."
+        },
+        {
+          "action": "HOLD",
+          "confidence": 0.5,
+          "invalidation": "Consolidation near current levels with RSI cooling toward 60-65 would validate a momentum entry; loss of SMA20 would negate it.",
+          "risk_notes": [
+            "Highest vol in universe amplifies drawdown risk",
+            "Correlated with BTC/ETH overbought condition"
+          ],
+          "symbol": "SOL-USDT",
+          "target_allocation": 0.0,
+          "thesis": "Highest 30d momentum (9.5%) in the universe, but RSI 88.6 and highest volatility (0.76); entry now is buying the top of an extended move."
+        }
+      ],
+      "market_regime": "high_volatility",
+      "portfolio_view": "neutral"
+    },
+    "provider": "nvidia_nim",
+    "request_id": "chatcmpl-197bea9d-a6d5-4d0a-8e4b-c492990abb9f",
+    "status": "ok",
+    "usage": {
+      "completion_tokens": 374,
+      "prompt_tokens": 1541,
+      "prompt_tokens_details": {
+        "audio_tokens": null,
+        "cached_tokens": 0
+      },
+      "total_tokens": 1915
+    }
+  },
+  "errors": [],
+  "executed": [],
+  "experiment_version": "v1.1",
+  "indicators": {
+    "BNB-USDT": {
+      "last": 800.1,
+      "mom_10": 1.910584638899504,
+      "mom_30": 6.226765799256495,
+      "rsi_14": 76.58349328214969,
+      "sma_20": 786.9649999999999,
+      "sma_50": 770.2360000000001,
+      "trend": "up",
+      "vol_20": 0.5645889042252229
+    },
+    "BTC-USDT": {
+      "last": 86677.0,
+      "mom_10": 2.6597955971304543,
+      "mom_30": 7.429606879302342,
+      "rsi_14": 95.08196721311494,
+      "sma_20": 84072.62,
+      "sma_50": 82146.804,
+      "trend": "up",
+      "vol_20": 0.6207941794957402
+    },
+    "ETH-USDT": {
+      "last": 2769.96,
+      "mom_10": 1.9942558362176843,
+      "mom_30": 7.12860258968766,
+      "rsi_14": 85.31709254600848,
+      "sma_20": 2711.8255,
+      "sma_50": 2650.9946,
+      "trend": "up",
+      "vol_20": 0.558640732824861
+    },
+    "SOL-USDT": {
+      "last": 118.4,
+      "mom_10": 2.051370453370116,
+      "mom_30": 9.47757743874249,
+      "rsi_14": 88.5714285714287,
+      "sma_20": 115.27349999999998,
+      "sma_50": 111.8742,
+      "trend": "up",
+      "vol_20": 0.7563849068205475
+    },
+    "XRP-USDT": {
+      "last": 1.5069,
+      "mom_10": 1.0935193881658423,
+      "mom_30": 9.266913204263648,
+      "rsi_14": 83.41232227488148,
+      "sma_20": 1.46882,
+      "sma_50": 1.4256119999999999,
+      "trend": "up",
+      "vol_20": 0.7633581651054864
+    }
+  },
+  "market": {
+    "BNB-USDT": {
+      "price": 800.1,
+      "source": "okx_public",
+      "symbol": "BNB-USDT",
+      "ts_ms": 1790021102076
+    },
+    "BTC-USDT": {
+      "price": 86677.0,
+      "source": "okx_public",
+      "symbol": "BTC-USDT",
+      "ts_ms": 1790021102033
+    },
+    "ETH-USDT": {
+      "price": 2769.95,
+      "source": "okx_public",
+      "symbol": "ETH-USDT",
+      "ts_ms": 1790021101574
+    },
+    "SOL-USDT": {
+      "price": 118.4,
+      "source": "okx_public",
+      "symbol": "SOL-USDT",
+      "ts_ms": 1790021102269
+    },
+    "XRP-USDT": {
+      "price": 1.5069,
+      "source": "okx_public",
+      "symbol": "XRP-USDT",
+      "ts_ms": 1790021103068
+    }
+  },
+  "pnl": {
+    "nav": 10.0,
+    "realized_pnl": 0.0,
+    "total_pnl": 0.0,
+    "unrealized_pnl": 0
+  },
+  "portfolio_after": {
+    "cash": 10.0,
+    "daily_orders": 0,
+    "day": "2026-09-21",
+    "day_equity": 10.0,
+    "ends_ms": 1791837209834,
+    "halted": false,
+    "last_equity": 10.0,
+    "last_run_hash": "2d0dcd7c253d73438cc58697e2bb667f5e16933f307fbea28de146a3c02b689a",
+    "market": {
+      "BNB-USDT": {
+        "price": 800.1,
+        "source": "okx_public",
+        "symbol": "BNB-USDT",
+        "ts_ms": 1790021102076
+      },
+      "BTC-USDT": {
+        "price": 86677.0,
+        "source": "okx_public",
+        "symbol": "BTC-USDT",
+        "ts_ms": 1790021102033
+      },
+      "ETH-USDT": {
+        "price": 2769.95,
+        "source": "okx_public",
+        "symbol": "ETH-USDT",
+        "ts_ms": 1790021101574
+      },
+      "SOL-USDT": {
+        "price": 118.4,
+        "source": "okx_public",
+        "symbol": "SOL-USDT",
+        "ts_ms": 1790021102269
+      },
+      "XRP-USDT": {
+        "price": 1.5069,
+        "source": "okx_public",
+        "symbol": "XRP-USDT",
+        "ts_ms": 1790021103068
+      }
+    },
+    "mode": "paper",
+    "peak_equity": 10.0,
+    "policy_hash": "e38cadc14e22b58ae4a45eca54324a094ca22ec6f4e282e3fe4428cecec25c98",
+    "positions": {},
+    "revision": 269,
+    "schema_version": 1,
+    "started_ms": 1789245209834
+  },
+  "portfolio_before": {
+    "cash": 10.0,
+    "daily_orders": 0,
+    "day": "2026-09-21",
+    "day_equity": 10.0,
+    "ends_ms": 1791837209834,
+    "halted": false,
+    "last_equity": 10.0,
+    "last_run_hash": "6e506f78697cfbe21a5720326a71709521e1071d9e9e07474734cd932bfe4007",
+    "market": {
+      "BNB-USDT": {
+        "price": 800.4,
+        "source": "okx_public",
+        "symbol": "BNB-USDT",
+        "ts_ms": 1790017502268
+      },
+      "BTC-USDT": {
+        "price": 86001.7,
+        "source": "okx_public",
+        "symbol": "BTC-USDT",
+        "ts_ms": 1790017501867
+      },
+      "ETH-USDT": {
+        "price": 2756.89,
+        "source": "okx_public",
+        "symbol": "ETH-USDT",
+        "ts_ms": 1790017502672
+      },
+      "SOL-USDT": {
+        "price": 117.36,
+        "source": "okx_public",
+        "symbol": "SOL-USDT",
+        "ts_ms": 1790017502068
+      },
+      "XRP-USDT": {
+        "price": 1.5041,
+        "source": "okx_public",
+        "symbol": "XRP-USDT",
+        "ts_ms": 1790017503172
+      }
+    },
+    "mode": "paper",
+    "peak_equity": 10.0,
+    "policy_hash": "e38cadc14e22b58ae4a45eca54324a094ca22ec6f4e282e3fe4428cecec25c98",
+    "positions": {},
+    "revision": 268,
+    "schema_version": 1,
+    "started_ms": 1789245209834
+  },
+  "proposal": {
+    "action": "HOLD",
+    "agent": "kimi-k3",
+    "created_ms": 1790021102283,
+    "expected_revision": 268,
+    "id": "experiment-aggressive-2026-09-21T20Z",
+    "notional": 0,
+    "reason": "no actionable candidate",
+    "symbol": "BTC-USDT"
+  },
+  "recorded_ms": 1790021102283,
+  "recorded_utc": "2026-09-21T20:05:02.283000Z",
+  "revision_after": 269,
+  "revision_before": 268,
+  "risk_exits": [],
+  "risk_result": {
+    "equity": 10.0,
+    "fills": [],
+    "hash": "2d0dcd7c253d73438cc58697e2bb667f5e16933f307fbea28de146a3c02b689a",
+    "previous_hash": "6e506f78697cfbe21a5720326a71709521e1071d9e9e07474734cd932bfe4007",
+    "reason": "hold",
+    "status": "held"
+  },
+  "run_id": "experiment-aggressive-2026-09-21T20Z"
+}
