@@ -1,0 +1,14 @@
+{
+  "errors": [
+    "model:model output invalid: ValueError: agent output fields mismatch | parsed keys: ['market_regime', 'portfolio_view', 'candidates', '_note'] | snippet: {\"market_regime\": \"risk_off\", \"portfolio_view\": \"neutral\", \"candidates\": [{\"symbol\": \"ETH-USDT\", \"action\": \"BUY\", \"confidence\": 0.45, \"target_allocation\": 0.1, \"thesis\": \"RSI_14 at 14 is deeply oversold after a ~3.7% 10-day decline; a small mean-reversion entry has favorable odds for a short-term bo"
+  ],
+  "recorded_utc": "2026-09-23T16:05:05.286000Z",
+  "run_id": "experiment-aggressive-2026-09-23T16Z",
+  "steps": {
+    "indicators": "ok",
+    "load_state": "ok",
+    "market": "ok",
+    "model": "error_hold_fallback",
+    "risk_gateway": "held"
+  }
+}
