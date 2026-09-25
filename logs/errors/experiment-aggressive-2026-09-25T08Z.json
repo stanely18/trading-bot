@@ -1,0 +1,14 @@
+{
+  "errors": [
+    "model:model output invalid: ValueError: candidate fields mismatch | parsed keys: ['market_regime', 'portfolio_view', 'candidates'] | snippet: {\"market_regime\": \"neutral\", \"portfolio_view\": \"neutral\", \"candidates\": [{\"symbol\": \"XRP-USDT\", \"action\": \"BUY\", \"confidence\": 0.55, \"target_allocation\": 0.15, \"thesis\": \"Only symbol with confirmed uptrend (trend=up, price above SMA20/SMA50, mom_30 strongly positive, RSI 49 not overbought). Relative"
+  ],
+  "recorded_utc": "2026-09-25T08:05:05.353000Z",
+  "run_id": "experiment-aggressive-2026-09-25T08Z",
+  "steps": {
+    "indicators": "ok",
+    "load_state": "ok",
+    "market": "ok",
+    "model": "error_hold_fallback",
+    "risk_gateway": "held"
+  }
+}
