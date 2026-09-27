@@ -1,0 +1,27 @@
+{
+  "duration_ms": 7189,
+  "errors": [
+    "model:model output invalid: TypeError: the JSON object must be str, bytes or bytearray, not NoneType | content snippet: 'None'"
+  ],
+  "experiment_version": "v1.1",
+  "fills": 0,
+  "finished_utc": "2026-09-27T00:00:13.762000Z",
+  "pnl": {
+    "nav": 10.2776,
+    "realized_pnl": 0.0428,
+    "total_pnl": 0.2776,
+    "unrealized_pnl": 0.2348
+  },
+  "result": "ok",
+  "risk_reason": "hold",
+  "risk_status": "held",
+  "run_id": "experiment-baseline-2026-09-27T00Z",
+  "started_utc": "2026-09-27T00:00:06.572000Z",
+  "steps": {
+    "indicators": "ok",
+    "load_state": "ok",
+    "market": "ok",
+    "model": "error_hold_fallback",
+    "risk_gateway": "held"
+  }
+}
