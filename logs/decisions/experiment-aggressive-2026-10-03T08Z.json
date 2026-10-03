@@ -1,0 +1,311 @@
+{
+  "adapter": {
+    "chosen": {
+      "action": "BUY",
+      "confidence": 0.45,
+      "raw_notional": 1.5,
+      "result": "resized",
+      "sized_notional": 1.0,
+      "symbol": "SOL-USDT",
+      "target_allocation": 0.15
+    },
+    "considered": [
+      {
+        "action": "HOLD",
+        "confidence": 0.5,
+        "result": "noop",
+        "symbol": "XRP-USDT",
+        "target_allocation": 0.0
+      },
+      {
+        "action": "BUY",
+        "confidence": 0.45,
+        "raw_notional": 1.5,
+        "result": "resized",
+        "sized_notional": 1.0,
+        "symbol": "SOL-USDT",
+        "target_allocation": 0.15
+      }
+    ],
+    "decision": "resized",
+    "nav": 10.0
+  },
+  "agent": {
+    "latency_ms": 24464,
+    "model": "moonshotai/kimi-k3",
+    "output": {
+      "candidates": [
+        {
+          "action": "BUY",
+          "confidence": 0.45,
+          "invalidation": "Price closes below SMA20 (~119.26) or mom_10 flips negative, signaling the bounce is failing within a still-negative 30-day trend.",
+          "risk_notes": [
+            "mom_30 still negative (-0.62), so this is counter-trend on the longer horizon",
+            "highest vol_20 after XRP (0.46); with possible account-level leverage, swings may be amplified",
+            "tiny NAV means fees/slippage eat a large fraction of any gain"
+          ],
+          "symbol": "SOL-USDT",
+          "target_allocation": 0.15,
+          "thesis": "Strongest short-term momentum in the universe (mom_10 +0.67) with price holding above both SMA20 and SMA50 and trend flat rather than down; best relative-strength candidate if the short-term bounce has legs."
+        },
+        {
+          "action": "BUY",
+          "confidence": 0.4,
+          "invalidation": "Failure to reclaim SMA50 (~2699.8) followed by a drop below SMA20 (~2681.9) negates the reversal setup.",
+          "risk_notes": [
+            "mom_30 is the most negative in the universe (-1.42), so the downtrend context is strong",
+            "RSI ~68 is nearing overbought, limiting near-term upside",
+            "position kept small given regime_hint risk_off"
+          ],
+          "symbol": "ETH-USDT",
+          "target_allocation": 0.12,
+          "thesis": "Second-strongest 10-day momentum (+0.52), price right at SMA20 and just under SMA50 with trend flat; a break above 2700 (SMA50) would confirm a short-term trend reversal."
+        },
+        {
+          "action": "HOLD",
+          "confidence": 0.5,
+          "invalidation": "A pullback to SMA20 with RSI normalizing below 60 would reopen a long consideration.",
+          "risk_notes": [
+            "highest volatility (0.63) in the universe",
+            "overbought in a downtrend is a poor entry"
+          ],
+          "symbol": "XRP-USDT",
+          "target_allocation": 0.0,
+          "thesis": "RSI ~71 is overbought while trend is down and price sits below both SMAs; no edge either way here."
+        }
+      ],
+      "market_regime": "risk_off",
+      "portfolio_view": "neutral"
+    },
+    "provider": "nvidia_nim",
+    "request_id": "chatcmpl-f5fcdf52-220a-44c5-b497-5a3acbf50f66",
+    "status": "ok",
+    "usage": {
+      "completion_tokens": 587,
+      "completion_tokens_details": {
+        "reasoning_tokens": 46
+      },
+      "prompt_tokens": 1534,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 2121
+    }
+  },
+  "errors": [],
+  "executed": [],
+  "experiment_version": "v1.1",
+  "indicators": {
+    "BNB-USDT": {
+      "last": 765.5,
+      "mom_10": -0.14349073832506942,
+      "mom_30": -1.1492768595041336,
+      "rsi_14": 54.16666666666687,
+      "sma_20": 768.955,
+      "sma_50": 771.038,
+      "trend": "down",
+      "vol_20": 0.3503944732501325
+    },
+    "BTC-USDT": {
+      "last": 84614.6,
+      "mom_10": 0.060546288346974286,
+      "mom_30": -0.6749650192042211,
+      "rsi_14": 68.5892028679886,
+      "sma_20": 84788.235,
+      "sma_50": 84900.604,
+      "trend": "down",
+      "vol_20": 0.2993667517644066
+    },
+    "ETH-USDT": {
+      "last": 2682.29,
+      "mom_10": 0.5246806006843352,
+      "mom_30": -1.4226387357589187,
+      "rsi_14": 67.9983267098932,
+      "sma_20": 2681.9375,
+      "sma_50": 2699.8062,
+      "trend": "flat",
+      "vol_20": 0.3691294405492516
+    },
+    "SOL-USDT": {
+      "last": 119.35,
+      "mom_10": 0.674820750738081,
+      "mom_30": -0.6162045132817151,
+      "rsi_14": 67.84660766961642,
+      "sma_20": 119.26050000000001,
+      "sma_50": 119.3568,
+      "trend": "flat",
+      "vol_20": 0.4625729118350897
+    },
+    "XRP-USDT": {
+      "last": 1.482,
+      "mom_10": 0.08779631255488862,
+      "mom_30": -1.3709570078530464,
+      "rsi_14": 71.46341463414635,
+      "sma_20": 1.48886,
+      "sma_50": 1.498612,
+      "trend": "down",
+      "vol_20": 0.626214127564981
+    }
+  },
+  "market": {
+    "BNB-USDT": {
+      "price": 765.5,
+      "source": "okx_public",
+      "symbol": "BNB-USDT",
+      "ts_ms": 1791014702769
+    },
+    "BTC-USDT": {
+      "price": 84614.6,
+      "source": "okx_public",
+      "symbol": "BTC-USDT",
+      "ts_ms": 1791014702570
+    },
+    "ETH-USDT": {
+      "price": 2682.29,
+      "source": "okx_public",
+      "symbol": "ETH-USDT",
+      "ts_ms": 1791014702267
+    },
+    "SOL-USDT": {
+      "price": 119.35,
+      "source": "okx_public",
+      "symbol": "SOL-USDT",
+      "ts_ms": 1791014702968
+    },
+    "XRP-USDT": {
+      "price": 1.4818,
+      "source": "okx_public",
+      "symbol": "XRP-USDT",
+      "ts_ms": 1791014702765
+    }
+  },
+  "pnl": {
+    "nav": 10.0,
+    "realized_pnl": 0.0,
+    "total_pnl": 0.0,
+    "unrealized_pnl": 0
+  },
+  "portfolio_after": {
+    "cash": 10.0,
+    "daily_orders": 0,
+    "day": "2026-10-03",
+    "day_equity": 10.0,
+    "ends_ms": 1791837209834,
+    "halted": false,
+    "last_equity": 10.0,
+    "last_run_hash": "6400049e4ac316a64f28c3cf9a5f426f99388022b3e7dd7ab76e6db9d021bc1e",
+    "market": {
+      "BNB-USDT": {
+        "price": 765.5,
+        "source": "okx_public",
+        "symbol": "BNB-USDT",
+        "ts_ms": 1791014702769
+      },
+      "BTC-USDT": {
+        "price": 84614.6,
+        "source": "okx_public",
+        "symbol": "BTC-USDT",
+        "ts_ms": 1791014702570
+      },
+      "ETH-USDT": {
+        "price": 2682.29,
+        "source": "okx_public",
+        "symbol": "ETH-USDT",
+        "ts_ms": 1791014702267
+      },
+      "SOL-USDT": {
+        "price": 119.35,
+        "source": "okx_public",
+        "symbol": "SOL-USDT",
+        "ts_ms": 1791014702968
+      },
+      "XRP-USDT": {
+        "price": 1.4818,
+        "source": "okx_public",
+        "symbol": "XRP-USDT",
+        "ts_ms": 1791014702765
+      }
+    },
+    "mode": "paper",
+    "peak_equity": 10.0,
+    "policy_hash": "e38cadc14e22b58ae4a45eca54324a094ca22ec6f4e282e3fe4428cecec25c98",
+    "positions": {},
+    "revision": 614,
+    "schema_version": 1,
+    "started_ms": 1789245209834
+  },
+  "portfolio_before": {
+    "cash": 10.0,
+    "daily_orders": 0,
+    "day": "2026-10-03",
+    "day_equity": 10.0,
+    "ends_ms": 1791837209834,
+    "halted": false,
+    "last_equity": 10.0,
+    "last_run_hash": "dce8a4dc00cc2a80fc1dbc4280a84243390cf81adfbb1f5c9e61b58fce308ded",
+    "market": {
+      "BNB-USDT": {
+        "price": 765.8,
+        "source": "okx_public",
+        "symbol": "BNB-USDT",
+        "ts_ms": 1791011103168
+      },
+      "BTC-USDT": {
+        "price": 84586.0,
+        "source": "okx_public",
+        "symbol": "BTC-USDT",
+        "ts_ms": 1791011102216
+      },
+      "ETH-USDT": {
+        "price": 2679.8,
+        "source": "okx_public",
+        "symbol": "ETH-USDT",
+        "ts_ms": 1791011102468
+      },
+      "SOL-USDT": {
+        "price": 119.34,
+        "source": "okx_public",
+        "symbol": "SOL-USDT",
+        "ts_ms": 1791011102712
+      },
+      "XRP-USDT": {
+        "price": 1.4844,
+        "source": "okx_public",
+        "symbol": "XRP-USDT",
+        "ts_ms": 1791011103269
+      }
+    },
+    "mode": "paper",
+    "peak_equity": 10.0,
+    "policy_hash": "e38cadc14e22b58ae4a45eca54324a094ca22ec6f4e282e3fe4428cecec25c98",
+    "positions": {},
+    "revision": 613,
+    "schema_version": 1,
+    "started_ms": 1789245209834
+  },
+  "proposal": {
+    "action": "BUY",
+    "agent": "kimi-k3",
+    "created_ms": 1791014702814,
+    "expected_revision": 613,
+    "id": "experiment-aggressive-2026-10-03T08Z",
+    "leverage": 5,
+    "notional": 1.0,
+    "reason": "Strongest short-term momentum in the universe (mom_10 +0.67) with price holding above both SMA20 and SMA50 and trend flat rather than down; best relative-strength candidate if the short-term bounce has legs.",
+    "symbol": "SOL-USDT"
+  },
+  "recorded_ms": 1791014702814,
+  "recorded_utc": "2026-10-03T08:05:02.814000Z",
+  "revision_after": 614,
+  "revision_before": 613,
+  "risk_exits": [],
+  "risk_result": {
+    "equity": 10.0,
+    "fills": [],
+    "hash": "6400049e4ac316a64f28c3cf9a5f426f99388022b3e7dd7ab76e6db9d021bc1e",
+    "previous_hash": "dce8a4dc00cc2a80fc1dbc4280a84243390cf81adfbb1f5c9e61b58fce308ded",
+    "reason": "planned_loss_cap",
+    "status": "rejected"
+  },
+  "run_id": "experiment-aggressive-2026-10-03T08Z"
+}
