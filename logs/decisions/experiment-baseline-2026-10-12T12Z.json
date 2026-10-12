@@ -1,0 +1,278 @@
+{
+  "adapter": {
+    "chosen": {
+      "action": "BUY",
+      "confidence": 0.45,
+      "raw_notional": 1.54,
+      "result": "resized",
+      "sized_notional": 1.02,
+      "symbol": "ETH-USDT",
+      "target_allocation": 0.15
+    },
+    "considered": [
+      {
+        "action": "BUY",
+        "confidence": 0.45,
+        "raw_notional": 1.54,
+        "result": "resized",
+        "sized_notional": 1.02,
+        "symbol": "ETH-USDT",
+        "target_allocation": 0.15
+      }
+    ],
+    "decision": "resized",
+    "nav": 10.270243152504575
+  },
+  "agent": {
+    "latency_ms": 16343,
+    "model": "moonshotai/kimi-k3",
+    "output": {
+      "candidates": [
+        {
+          "action": "BUY",
+          "confidence": 0.45,
+          "invalidation": "Price closing back below SMA50 (~2524) or 30-day momentum turning negative would negate the relative-strength thesis.",
+          "risk_notes": [
+            "Trend is officially flat, so edge is weak and position should be small",
+            "10-day momentum is slightly negative (-0.08), suggesting near-term drift",
+            "Very small NAV means fees and slippage consume a large share of any move"
+          ],
+          "symbol": "ETH-USDT",
+          "target_allocation": 0.15,
+          "thesis": "ETH is the only major with price above SMA50, positive 30-day momentum (+1.58%), and RSI 56 -- mild relative strength versus BTC/SOL/BNB/XRP, which all show flat-to-weak setups."
+        }
+      ],
+      "market_regime": "neutral",
+      "portfolio_view": "neutral"
+    },
+    "provider": "nvidia_nim",
+    "request_id": "chatcmpl-c7420e01-9c14-466c-8fa7-d866e77fcfd6",
+    "status": "ok",
+    "usage": {
+      "completion_tokens": 260,
+      "completion_tokens_details": {
+        "reasoning_tokens": 50
+      },
+      "prompt_tokens": 1533,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 1793
+    }
+  },
+  "errors": [],
+  "executed": [],
+  "experiment_version": "v1.1",
+  "indicators": {
+    "BNB-USDT": {
+      "last": 749.7,
+      "mom_10": -0.6361829025844923,
+      "mom_30": 0.10682334089999745,
+      "rsi_14": 40.20618556701047,
+      "sma_20": 752.955,
+      "sma_50": 751.038,
+      "trend": "flat",
+      "vol_20": 0.22734373269744818
+    },
+    "BTC-USDT": {
+      "last": 83396.7,
+      "mom_10": -0.5266095884692179,
+      "mom_30": 0.27896451258766497,
+      "rsi_14": 45.677872838936366,
+      "sma_20": 83728.435,
+      "sma_50": 83340.058,
+      "trend": "flat",
+      "vol_20": 0.26167159893089176
+    },
+    "ETH-USDT": {
+      "last": 2545.68,
+      "mom_10": -0.08203252255895022,
+      "mom_30": 1.5777251071368736,
+      "rsi_14": 56.23613897982882,
+      "sma_20": 2547.993,
+      "sma_50": 2524.0658,
+      "trend": "flat",
+      "vol_20": 0.31645949192829215
+    },
+    "SOL-USDT": {
+      "last": 111.02,
+      "mom_10": -0.9280742459396807,
+      "mom_30": 1.0834926704907488,
+      "rsi_14": 49.21875000000002,
+      "sma_20": 111.758,
+      "sma_50": 110.725,
+      "trend": "flat",
+      "vol_20": 0.44355633141170553
+    },
+    "XRP-USDT": {
+      "last": 1.3988,
+      "mom_10": -0.5898656811882619,
+      "mom_30": 0.09302325581395099,
+      "rsi_14": 40.29227557411298,
+      "sma_20": 1.4087049999999999,
+      "sma_50": 1.404444,
+      "trend": "flat",
+      "vol_20": 0.351513512080802
+    }
+  },
+  "market": {
+    "BNB-USDT": {
+      "price": 749.7,
+      "source": "okx_public",
+      "symbol": "BNB-USDT",
+      "ts_ms": 1791806405567
+    },
+    "BTC-USDT": {
+      "price": 83395.7,
+      "source": "okx_public",
+      "symbol": "BTC-USDT",
+      "ts_ms": 1791806404566
+    },
+    "ETH-USDT": {
+      "price": 2545.68,
+      "source": "okx_public",
+      "symbol": "ETH-USDT",
+      "ts_ms": 1791806404634
+    },
+    "SOL-USDT": {
+      "price": 111.01,
+      "source": "okx_public",
+      "symbol": "SOL-USDT",
+      "ts_ms": 1791806405357
+    },
+    "XRP-USDT": {
+      "price": 1.3987,
+      "source": "okx_public",
+      "symbol": "XRP-USDT",
+      "ts_ms": 1791806405862
+    }
+  },
+  "pnl": {
+    "nav": 10.2702,
+    "realized_pnl": 0.2702,
+    "total_pnl": 0.2702,
+    "unrealized_pnl": 0
+  },
+  "portfolio_after": {
+    "cash": 10.270243152504575,
+    "daily_orders": 0,
+    "day": "2026-10-12",
+    "day_equity": 10.270243152504575,
+    "ends_ms": 1791686027468,
+    "halted": false,
+    "last_equity": 10.270243152504575,
+    "last_run_hash": "333d6c1efdde5d1faae573da123bec4861f04e8be62cc09910edd2a05662cf14",
+    "market": {
+      "BNB-USDT": {
+        "price": 749.7,
+        "source": "okx_public",
+        "symbol": "BNB-USDT",
+        "ts_ms": 1791806405567
+      },
+      "BTC-USDT": {
+        "price": 83395.7,
+        "source": "okx_public",
+        "symbol": "BTC-USDT",
+        "ts_ms": 1791806404566
+      },
+      "ETH-USDT": {
+        "price": 2545.68,
+        "source": "okx_public",
+        "symbol": "ETH-USDT",
+        "ts_ms": 1791806404634
+      },
+      "SOL-USDT": {
+        "price": 111.01,
+        "source": "okx_public",
+        "symbol": "SOL-USDT",
+        "ts_ms": 1791806405357
+      },
+      "XRP-USDT": {
+        "price": 1.3987,
+        "source": "okx_public",
+        "symbol": "XRP-USDT",
+        "ts_ms": 1791806405862
+      }
+    },
+    "mode": "paper",
+    "peak_equity": 10.325719869557087,
+    "policy_hash": "8dcd80442459c0f999c13e704d03570c7a478af3c13709c7f3df9bf4aaee25c6",
+    "positions": {},
+    "revision": 945,
+    "schema_version": 1,
+    "started_ms": 1789094027468
+  },
+  "portfolio_before": {
+    "cash": 10.270243152504575,
+    "daily_orders": 0,
+    "day": "2026-10-12",
+    "day_equity": 10.270243152504575,
+    "ends_ms": 1791686027468,
+    "halted": false,
+    "last_equity": 10.270243152504575,
+    "last_run_hash": "2337b01263fe2cba82bb1f6dd5bcc8b3a8e23bc0b8be56aa1c2e9b1288a08ac2",
+    "market": {
+      "BNB-USDT": {
+        "price": 749.7,
+        "source": "okx_public",
+        "symbol": "BNB-USDT",
+        "ts_ms": 1791806402768
+      },
+      "BTC-USDT": {
+        "price": 83394.9,
+        "source": "okx_public",
+        "symbol": "BTC-USDT",
+        "ts_ms": 1791806402167
+      },
+      "ETH-USDT": {
+        "price": 2545.47,
+        "source": "okx_public",
+        "symbol": "ETH-USDT",
+        "ts_ms": 1791806402364
+      },
+      "SOL-USDT": {
+        "price": 111.0,
+        "source": "okx_public",
+        "symbol": "SOL-USDT",
+        "ts_ms": 1791806402266
+      },
+      "XRP-USDT": {
+        "price": 1.3987,
+        "source": "okx_public",
+        "symbol": "XRP-USDT",
+        "ts_ms": 1791806403036
+      }
+    },
+    "mode": "paper",
+    "peak_equity": 10.325719869557087,
+    "policy_hash": "8dcd80442459c0f999c13e704d03570c7a478af3c13709c7f3df9bf4aaee25c6",
+    "positions": {},
+    "revision": 944,
+    "schema_version": 1,
+    "started_ms": 1789094027468
+  },
+  "proposal": {
+    "action": "BUY",
+    "agent": "kimi-k3",
+    "created_ms": 1791806405309,
+    "expected_revision": 944,
+    "id": "experiment-baseline-2026-10-12T12Z",
+    "notional": 1.02,
+    "reason": "ETH is the only major with price above SMA50, positive 30-day momentum (+1.58%), and RSI 56 -- mild relative strength versus BTC/SOL/BNB/XRP, which all show flat-to-weak setups.",
+    "symbol": "ETH-USDT"
+  },
+  "recorded_ms": 1791806405309,
+  "recorded_utc": "2026-10-12T12:00:05.309000Z",
+  "revision_after": 945,
+  "revision_before": 944,
+  "risk_exits": [],
+  "risk_result": {
+    "equity": 10.270243152504575,
+    "fills": [],
+    "hash": "333d6c1efdde5d1faae573da123bec4861f04e8be62cc09910edd2a05662cf14",
+    "previous_hash": "2337b01263fe2cba82bb1f6dd5bcc8b3a8e23bc0b8be56aa1c2e9b1288a08ac2",
+    "reason": "experiment_ended",
+    "status": "rejected"
+  },
+  "run_id": "experiment-baseline-2026-10-12T12Z"
+}
