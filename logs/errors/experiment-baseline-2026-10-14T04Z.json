@@ -1,0 +1,14 @@
+{
+  "errors": [
+    "model:model output invalid: ValueError: agent output fields mismatch | parsed keys: ['market_regime', 'portfolio_view', 'candidates', '_note'] | snippet: {\"market_regime\": \"neutral\", \"portfolio_view\": \"add_risk\", \"candidates\": [{\"symbol\": \"BTC-USDT\", \"action\": \"BUY\", \"confidence\": 0.55, \"target_allocation\": 0.2, \"thesis\": \"BTC is the only symbol with a confirmed up trend: price above both SMA20 and SMA50, positive 10/30-day momentum, RSI ~54 (not ove"
+  ],
+  "recorded_utc": "2026-10-14T04:00:01.968000Z",
+  "run_id": "experiment-baseline-2026-10-14T04Z",
+  "steps": {
+    "indicators": "ok",
+    "load_state": "ok",
+    "market": "ok",
+    "model": "error_hold_fallback",
+    "risk_gateway": "held"
+  }
+}
