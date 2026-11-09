@@ -1,0 +1,229 @@
+{
+  "adapter": {
+    "chosen": null,
+    "considered": [],
+    "decision": "hold",
+    "nav": 10.0
+  },
+  "agent": {
+    "error": "HTTP 410 from nvidia_nim for model 'moonshotai/kimi-k3': {\"type\":\"about:blank\",\"title\":\"Gone\",\"status\":410,\"detail\":\"The model 'moonshotai/kimi-k3' has reached its end of life on 2026-10-15T08:00:00Z and is no longer available.\"}",
+    "status": "model_error"
+  },
+  "errors": [
+    "model:HTTP 410 from nvidia_nim for model 'moonshotai/kimi-k3': {\"type\":\"about:blank\",\"title\":\"Gone\",\"status\":410,\"detail\":\"The model 'moonshotai/kimi-k3' has reached its end of life on 2026-10-15T08:00:00Z and is no longer available.\"}"
+  ],
+  "executed": [],
+  "experiment_version": "v1.1",
+  "indicators": {
+    "BNB-USDT": {
+      "last": 683.64,
+      "mom_10": -1.9955272664716972,
+      "mom_30": -1.8689174059081881,
+      "rsi_14": 29.365795010519946,
+      "sma_20": 695.0415,
+      "sma_50": 695.1433999999999,
+      "trend": "down",
+      "vol_20": 0.5865332184838383
+    },
+    "BTC-USDT": {
+      "last": 74610.7,
+      "mom_10": -1.8818621887727427,
+      "mom_30": -1.5678286417648901,
+      "rsi_14": 31.664958432980427,
+      "sma_20": 75634.26999999999,
+      "sma_50": 75794.594,
+      "trend": "down",
+      "vol_20": 0.5300172199888482
+    },
+    "ETH-USDT": {
+      "last": 2121.26,
+      "mom_10": -5.335124352354715,
+      "mom_30": -5.177284674665172,
+      "rsi_14": 11.177145944485588,
+      "sma_20": 2214.1785,
+      "sma_50": 2230.1204000000002,
+      "trend": "down",
+      "vol_20": 1.0354823232206083
+    },
+    "SOL-USDT": {
+      "last": 86.31,
+      "mom_10": -3.6396114770570365,
+      "mom_30": -3.8971161340607963,
+      "rsi_14": 29.494382022471868,
+      "sma_20": 88.7445,
+      "sma_50": 89.37799999999999,
+      "trend": "down",
+      "vol_20": 0.8830842041812866
+    },
+    "XRP-USDT": {
+      "last": 1.1077,
+      "mom_10": -4.525081882434067,
+      "mom_30": -4.804056376761778,
+      "rsi_14": 17.103620474406796,
+      "sma_20": 1.150045,
+      "sma_50": 1.159348,
+      "trend": "down",
+      "vol_20": 0.9006621120459882
+    }
+  },
+  "market": {
+    "BNB-USDT": {
+      "price": 683.64,
+      "source": "okx_public",
+      "symbol": "BNB-USDT",
+      "ts_ms": 1794182702571
+    },
+    "BTC-USDT": {
+      "price": 74610.7,
+      "source": "okx_public",
+      "symbol": "BTC-USDT",
+      "ts_ms": 1794182702263
+    },
+    "ETH-USDT": {
+      "price": 2121.26,
+      "source": "okx_public",
+      "symbol": "ETH-USDT",
+      "ts_ms": 1794182702208
+    },
+    "SOL-USDT": {
+      "price": 86.32,
+      "source": "okx_public",
+      "symbol": "SOL-USDT",
+      "ts_ms": 1794182701671
+    },
+    "XRP-USDT": {
+      "price": 1.1077,
+      "source": "okx_public",
+      "symbol": "XRP-USDT",
+      "ts_ms": 1794182702471
+    }
+  },
+  "pnl": {
+    "nav": 10.0,
+    "realized_pnl": 0.0,
+    "total_pnl": 0.0,
+    "unrealized_pnl": 0
+  },
+  "portfolio_after": {
+    "cash": 10.0,
+    "daily_orders": 0,
+    "day": "2026-11-09",
+    "day_equity": 10.0,
+    "ends_ms": 1791837209834,
+    "halted": false,
+    "last_equity": 10.0,
+    "last_run_hash": "fd5ce3c039016aa1eda44d9ec67fc910521241a3d6ecc122ed2a4a6b8dd7a91b",
+    "market": {
+      "BNB-USDT": {
+        "price": 683.64,
+        "source": "okx_public",
+        "symbol": "BNB-USDT",
+        "ts_ms": 1794182702571
+      },
+      "BTC-USDT": {
+        "price": 74610.7,
+        "source": "okx_public",
+        "symbol": "BTC-USDT",
+        "ts_ms": 1794182702263
+      },
+      "ETH-USDT": {
+        "price": 2121.26,
+        "source": "okx_public",
+        "symbol": "ETH-USDT",
+        "ts_ms": 1794182702208
+      },
+      "SOL-USDT": {
+        "price": 86.32,
+        "source": "okx_public",
+        "symbol": "SOL-USDT",
+        "ts_ms": 1794182701671
+      },
+      "XRP-USDT": {
+        "price": 1.1077,
+        "source": "okx_public",
+        "symbol": "XRP-USDT",
+        "ts_ms": 1794182702471
+      }
+    },
+    "mode": "paper",
+    "peak_equity": 10.0,
+    "policy_hash": "e38cadc14e22b58ae4a45eca54324a094ca22ec6f4e282e3fe4428cecec25c98",
+    "positions": {},
+    "revision": 1712,
+    "schema_version": 1,
+    "started_ms": 1789245209834
+  },
+  "portfolio_before": {
+    "cash": 10.0,
+    "daily_orders": 0,
+    "day": "2026-11-08",
+    "day_equity": 10.0,
+    "ends_ms": 1791837209834,
+    "halted": false,
+    "last_equity": 10.0,
+    "last_run_hash": "43a1ef19211df42ece0ebc6492555e0cde03e81b82afc241468ab29c857e5b25",
+    "market": {
+      "BNB-USDT": {
+        "price": 686.1,
+        "source": "okx_public",
+        "symbol": "BNB-USDT",
+        "ts_ms": 1794179102971
+      },
+      "BTC-USDT": {
+        "price": 74798.9,
+        "source": "okx_public",
+        "symbol": "BTC-USDT",
+        "ts_ms": 1794179102072
+      },
+      "ETH-USDT": {
+        "price": 2141.01,
+        "source": "okx_public",
+        "symbol": "ETH-USDT",
+        "ts_ms": 1794179102020
+      },
+      "SOL-USDT": {
+        "price": 86.88,
+        "source": "okx_public",
+        "symbol": "SOL-USDT",
+        "ts_ms": 1794179102040
+      },
+      "XRP-USDT": {
+        "price": 1.1177,
+        "source": "okx_public",
+        "symbol": "XRP-USDT",
+        "ts_ms": 1794179102965
+      }
+    },
+    "mode": "paper",
+    "peak_equity": 10.0,
+    "policy_hash": "e38cadc14e22b58ae4a45eca54324a094ca22ec6f4e282e3fe4428cecec25c98",
+    "positions": {},
+    "revision": 1711,
+    "schema_version": 1,
+    "started_ms": 1789245209834
+  },
+  "proposal": {
+    "action": "HOLD",
+    "agent": "kimi-k3",
+    "created_ms": 1794182702166,
+    "expected_revision": 1711,
+    "id": "experiment-aggressive-2026-11-09T00Z",
+    "notional": 0,
+    "reason": "no actionable candidate",
+    "symbol": "BTC-USDT"
+  },
+  "recorded_ms": 1794182702166,
+  "recorded_utc": "2026-11-09T00:05:02.166000Z",
+  "revision_after": 1712,
+  "revision_before": 1711,
+  "risk_exits": [],
+  "risk_result": {
+    "equity": 10.0,
+    "fills": [],
+    "hash": "fd5ce3c039016aa1eda44d9ec67fc910521241a3d6ecc122ed2a4a6b8dd7a91b",
+    "previous_hash": "43a1ef19211df42ece0ebc6492555e0cde03e81b82afc241468ab29c857e5b25",
+    "reason": "hold",
+    "status": "held"
+  },
+  "run_id": "experiment-aggressive-2026-11-09T00Z"
+}
